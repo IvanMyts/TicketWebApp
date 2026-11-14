@@ -43,3 +43,9 @@ CREATE TABLE IF NOT EXISTS ticket (
     number         DOUBLE PRECISION CHECK (number > 0),
     venue_id       INT REFERENCES venue (id)
 );
+
+CREATE TABLE IF NOT EXISTS users (
+    id             SERIAL PRIMARY KEY,
+    login          VARCHAR(255) NOT NULL UNIQUE,
+    hash_password  VARCHAR(255) NOT NULL
+);

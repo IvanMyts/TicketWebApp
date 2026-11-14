@@ -1,8 +1,8 @@
 package model;
 
 import lombok.*;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 
 @Getter
 @Setter

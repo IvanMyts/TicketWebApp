@@ -3,11 +3,11 @@ plugins {
     id("war")
 }
 repositories {
-MavenCentral()
+mavenCentral()
 }
 
 dependencies {
-	providedCompile 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+	providedCompile 'javax:javaee-api:8.0.1' // WildFly 26 = Java EE 8 (javax.*)
 	compileOnly 'org.projectlombok:lombok:1.18.34'
 	annotationProcessor 'org.projectlombok:lombok:1.18.34'
 }
