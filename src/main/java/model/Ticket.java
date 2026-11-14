@@ -29,11 +29,11 @@ public class Ticket {
     @Column(name = "creation_date", nullable = false, updatable = false)
     private ZonedDateTime creationDate; //Поле не может быть null, Значение этого поля должно генерироваться автоматически
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "person_id")
     private Person person; //Поле может быть null
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     private Event event; //Поле может быть null
 
@@ -56,7 +56,7 @@ public class Ticket {
     @Column(name = "number")
     private Double number; //Поле может быть null, Значение поля должно быть больше 0
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venue_id")
     private Venue venue; //Поле может быть null
 

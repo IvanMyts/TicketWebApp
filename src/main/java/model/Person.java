@@ -24,7 +24,7 @@ public class Person {
     private Color hairColor; //Поле может быть null
 
     @Valid
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "location_id")
     private Location location; //Поле может быть null
 
