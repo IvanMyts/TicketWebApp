@@ -1,29 +1,33 @@
 package security;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpFilter;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Provider;
+import java.io.IOException;
 
-import static rest.ErrorMapper.response;
-
-/** Пропускает к REST только вошедших пользователей. Вход и регистрация открыты. */
-@Provider
-public class AuthFilter implements ContainerRequestFilter {
-    @Context
-    HttpServletRequest request;
+/**
+ * Пускает к REST и WebSocket только вошедших пользователей. Вход и регистрация открыты.
+ * Рукопожатие WebSocket — обычный HTTP-запрос, поэтому без сессии соединение не откроется.
+ */
+@WebFilter({"/api/*", "/ws/*"})
+public class AuthFilter extends HttpFilter {
 
     @Override
-    public void filter(ContainerRequestContext context) {
-        String path = context.getUriInfo().getPath().replaceFirst("^/+", "");
-        if (path.equals("auth/login") || path.equals("auth/register")) {
+    protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        boolean open = path.equals("/api/auth/login") || path.equals("/api/auth/register");
+        HttpSession session = request.getSession(false);
+        if (!open && (session == null || session.getAttribute("login") == null)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"message\":\"Войдите в систему\"}");
             return;
         }
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute(SessionUser.ATTRIBUTE) == null) {
-            context.abortWith(response(401, "Войдите в систему"));
-        }
+        chain.doFilter(request, response);
     }
 }

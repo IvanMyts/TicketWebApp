@@ -2,7 +2,6 @@ package rest;
 
 import dto.request.AuthRequest;
 import dto.response.AuthResponse;
-import security.SessionUser;
 import service.AuthService;
 
 import javax.enterprise.context.RequestScoped;
@@ -49,7 +48,7 @@ public class AuthResource {
         if (old != null) {
             old.invalidate();
         }
-        request.getSession(true).setAttribute(SessionUser.ATTRIBUTE, body.getLogin());
+        request.getSession(true).setAttribute("login", body.getLogin());
         return Response.ok(new AuthResponse(body.getLogin())).build();
     }
 
@@ -57,7 +56,7 @@ public class AuthResource {
     @GET
     @Path("me")
     public AuthResponse me() {
-        return new AuthResponse((String) request.getSession().getAttribute(SessionUser.ATTRIBUTE));
+        return new AuthResponse((String) request.getSession().getAttribute("login"));
     }
 
     @POST

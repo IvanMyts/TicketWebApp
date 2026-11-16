@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Клиенты подключаются к ws://host/<context>/ws/changes и получают сообщения
  * {"entityType":"TICKET","id":5} при каждом изменении данных. Получив сообщение,
  * клиент сам перезапрашивает нужные данные по REST.
- * Неавторизованные подключения отсекает security.WebSocketAuthFilter ещё до установки соединения.
+ * Неавторизованные подключения отсекает security.AuthFilter ещё до установки соединения.
  */
 @ServerEndpoint("/ws/changes")
 public class ChangesEndpoint {
