@@ -1,7 +1,6 @@
 package model;
 
 import javax.persistence.*;
-import javax.validation.Valid;
 import javax.validation.constraints.*;
 import lombok.*;
 
@@ -23,8 +22,7 @@ public class Person {
     @Column(name = "hair_color", length = 20)
     private Color hairColor; //Поле может быть null
 
-    @Valid
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
     private Location location; //Поле может быть null
 

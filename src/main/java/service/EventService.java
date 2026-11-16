@@ -1,11 +1,12 @@
 package service;
 
-import dto.EventRequest;
-import dto.EventResponse;
-import dto.PageQuery;
-import dto.PageResponse;
+import dto.response.EntityChangeEvent;
+import dto.response.EntityChangeEvent.EntityType;
+import dto.request.EventRequest;
+import dto.response.EventResponse;
+import dto.request.PageQuery;
+import dto.response.PageResponse;
 import exception.ConflictException;
-import exception.InvalidRequestException;
 import exception.ObjectNotFoundException;
 import mapper.EventMapper;
 import model.Event;
@@ -27,12 +28,14 @@ public class EventService {
     TicketRepository ticketRepository;
     @Inject
     EventMapper mapper;
+    @Inject
+    javax.enterprise.event.Event<EntityChangeEvent> changes;
 
     public PageResponse<EventResponse> list(PageQuery query) {
         List<EventResponse> content = repository.findPage(query).stream()
                 .map(mapper::toResponse)
                 .toList();
-        return PageResponse.of(content, query.getPage(), query.getSize(), repository.count(query));
+        return PageResponse.of(content, query.getSize(), repository.count(query));
     }
 
     public EventResponse get(int id) {
@@ -40,12 +43,16 @@ public class EventService {
     }
 
     public EventResponse create(EventRequest request) {
-        return mapper.toResponse(createEntity(request));
+        Event entity = mapper.toEntity(request);
+        repository.save(entity);
+        changed(entity.getId());
+        return mapper.toResponse(entity);
     }
 
     public EventResponse update(int id, EventRequest request) {
         Event entity = findEntity(id);
         mapper.update(entity, request);
+        changed(id);
         return mapper.toResponse(entity);
     }
 
@@ -57,13 +64,11 @@ public class EventService {
             if (replacementId == null) {
                 throw new ConflictException("Мероприятие используется (билетов: " + tickets.size() + "). Выберите замену.");
             }
-            if (replacementId == id) {
-                throw new InvalidRequestException("Замена должна отличаться от удаляемого мероприятия");
-            }
             Event replacement = findEntity(replacementId);
             tickets.forEach(ticket -> ticket.setEvent(replacement));
         }
         repository.delete(entity);
+        changed(id);
     }
 
     public Event findEntity(int id) {
@@ -71,17 +76,7 @@ public class EventService {
                 .orElseThrow(() -> new ObjectNotFoundException("Мероприятие с id " + id + " не найдено"));
     }
 
-    /** Связь при создании/изменении билета: существующий объект по id, новый из запроса или null. */
-    public Event resolve(Integer id, EventRequest request) {
-        if (id != null) {
-            return findEntity(id);
-        }
-        return request != null ? createEntity(request) : null;
-    }
-
-    private Event createEntity(EventRequest request) {
-        Event entity = mapper.toEntity(request);
-        repository.save(entity);
-        return entity;
+    private void changed(long id) {
+        changes.fire(new EntityChangeEvent(EntityType.EVENT, id));
     }
 }

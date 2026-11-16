@@ -1,7 +1,9 @@
 package mapper;
 
-import dto.TicketRequest;
-import dto.TicketResponse;
+import dto.CoordinatesDto;
+import dto.request.TicketRequest;
+import dto.response.TicketResponse;
+import model.Coordinates;
 import model.Ticket;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -14,9 +16,6 @@ import javax.inject.Inject;
  */
 @ApplicationScoped
 public class TicketMapper {
-
-    @Inject
-    private CoordinatesMapper coordinatesMapper;
 
     @Inject
     private PersonMapper personMapper;
@@ -36,7 +35,7 @@ public class TicketMapper {
     /** Полная замена простых полей (семантика PUT). id, creationDate и связи не трогаются. */
     public void update(Ticket target, TicketRequest request) {
         target.setName(request.getName());
-        target.setCoordinates(coordinatesMapper.toEntity(request.getCoordinates()));
+        target.setCoordinates(new Coordinates(request.getCoordinates().getX(), request.getCoordinates().getY()));
         target.setPrice(request.getPrice());
         target.setType(request.getType());
         target.setDiscount(request.getDiscount());
@@ -44,13 +43,10 @@ public class TicketMapper {
     }
 
     public TicketResponse toResponse(Ticket entity) {
-        if (entity == null) {
-            return null;
-        }
         return new TicketResponse(
                 entity.getId(),
                 entity.getName(),
-                coordinatesMapper.toDto(entity.getCoordinates()),
+                new CoordinatesDto(entity.getCoordinates().getX(), entity.getCoordinates().getY()),
                 entity.getCreationDate(),
                 personMapper.toResponse(entity.getPerson()),
                 eventMapper.toResponse(entity.getEvent()),

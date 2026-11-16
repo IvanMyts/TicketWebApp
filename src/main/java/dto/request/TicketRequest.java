@@ -1,6 +1,6 @@
-package dto;
+package dto.request;
 
-import javax.json.bind.annotation.JsonbTransient;
+import dto.CoordinatesDto;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 import lombok.*;
@@ -9,7 +9,7 @@ import model.TicketType;
 /**
  * Тело запроса на создание/обновление билета.
  * id и creationDate не передаются — их генерирует БД/сервер.
- * Для каждой связи можно указать либо ID существующего объекта, либо новый объект.
+ * Связи задаются id уже существующих объектов (null — связи нет).
  */
 @Data
 @NoArgsConstructor
@@ -24,12 +24,8 @@ public class TicketRequest {
     private CoordinatesDto coordinates;
 
     private Long personId;
-    @Valid
-    private PersonRequest person;
 
     private Integer eventId;
-    @Valid
-    private EventRequest event;
 
     @NotNull(message = "Цена обязательна")
     @Positive(message = "Цена должна быть больше 0")
@@ -46,24 +42,4 @@ public class TicketRequest {
     private Double number;
 
     private Integer venueId;
-    @Valid
-    private VenueRequest venue;
-
-    @JsonbTransient
-    @AssertTrue(message = "Укажите либо существующего человека, либо нового, но не обоих сразу")
-    public boolean isPersonUnambiguous() {
-        return personId == null || person == null;
-    }
-
-    @JsonbTransient
-    @AssertTrue(message = "Укажите либо существующее мероприятие, либо новое, но не оба сразу")
-    public boolean isEventUnambiguous() {
-        return eventId == null || event == null;
-    }
-
-    @JsonbTransient
-    @AssertTrue(message = "Укажите либо существующую площадку, либо новую, но не обе сразу")
-    public boolean isVenueUnambiguous() {
-        return venueId == null || venue == null;
-    }
 }

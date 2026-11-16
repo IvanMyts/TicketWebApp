@@ -1,5 +1,6 @@
-package dto;
+package dto.response;
 
+import dto.CoordinatesDto;
 import lombok.*;
 import model.TicketType;
 

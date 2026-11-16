@@ -1,7 +1,7 @@
 package mapper;
 
-import dto.PersonRequest;
-import dto.PersonResponse;
+import dto.request.PersonRequest;
+import dto.response.PersonResponse;
 import model.Person;
 
 import javax.enterprise.context.ApplicationScoped;

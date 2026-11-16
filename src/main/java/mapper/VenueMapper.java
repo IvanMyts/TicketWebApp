@@ -1,7 +1,7 @@
 package mapper;
 
-import dto.VenueRequest;
-import dto.VenueResponse;
+import dto.request.VenueRequest;
+import dto.response.VenueResponse;
 import model.Venue;
 
 import javax.enterprise.context.ApplicationScoped;

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
+             version="2.2">
+    <persistence-unit name="ticketPU" transaction-type="JTA">
+        <!-- Источник данных настраивается в WildFly скриптом scripts/setup-wildfly-datasource.sh -->
+        <jta-data-source>java:jboss/datasources/TicketDS</jta-data-source>
+        <properties>
+            <!-- Схему создаёт src/main/resources/sql/create.sql; Hibernate только сверяет с ней сущности -->
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <!-- Диалект задан явно: иначе Hibernate определяет его по соединению при старте
+                 и при недоступной БД падает с непонятной ошибкой про DialectResolutionInfo -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
+        </properties>
+    </persistence-unit>
+</persistence>

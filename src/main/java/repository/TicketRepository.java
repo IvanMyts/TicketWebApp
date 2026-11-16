@@ -8,7 +8,6 @@ import model.Venue;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
-import java.util.Optional;
 
 @ApplicationScoped
 public class TicketRepository extends BaseRepository<Ticket, Long> {
@@ -27,13 +26,6 @@ public class TicketRepository extends BaseRepository<Ticket, Long> {
             case "type" -> "CAST(t.type AS string)";
             default -> throw new InvalidRequestException("Недопустимая колонка: " + column);
         };
-    }
-
-    /** Билет со всеми связанными объектами (для окна просмотра). */
-    public Optional<Ticket> findDetailedById(long id) {
-        return em.createQuery(SELECT + " WHERE t.id = :id", Ticket.class)
-                .setParameter("id", id)
-                .getResultList().stream().findFirst();
     }
 
     public List<Ticket> findByPerson(Person person) {

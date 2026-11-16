@@ -1,0 +1,57 @@
+import { html, useState, useEffect } from './lib.js';
+import { api, setUnauthorizedHandler, subscribeToChanges } from './api.js';
+import { ENTITIES } from './entities.js';
+import { Login } from './login.js';
+import { EntityPage } from './entity-page.js';
+import { FormDialog, ViewDialog, DeleteDialog } from './dialogs.js';
+import { Operations } from './operations.js';
+
+function App() {
+    const [user, setUser] = useState(undefined); // undefined — ещё проверяем сессию
+    const [page, setPage] = useState('tickets');
+    const [dialog, setDialog] = useState(null); // { kind, type, id }
+    const [version, setVersion] = useState(0);   // растёт при каждом сообщении WebSocket
+
+    useEffect(() => {
+        setUnauthorizedHandler(() => setUser(null));
+        api('auth/me').then((me) => setUser(me.login)).catch(() => setUser(null));
+    }, []);
+
+    useEffect(() => {
+        if (!user) return undefined;
+        return subscribeToChanges(() => setVersion((v) => v + 1));
+    }, [user]);
+
+    if (user === undefined) return html`<p class="center">Загрузка…</p>`;
+    if (!user) return html`<${Login} onLogin=${setUser} />`;
+
+    const open = (kind, type, id) => setDialog({ kind, type, id });
+    const close = () => setDialog(null);
+    const logout = async () => {
+        await api('auth/logout', { method: 'POST' }).catch(() => {});
+        setUser(null);
+    };
+
+    const menu = [...Object.entries(ENTITIES).map(([key, cfg]) => [key, cfg.title]), ['operations', 'Специальные операции']];
+
+    return html`
+        <nav class="menu">
+            ${menu.map(([key, title]) => html`
+                <button key=${key} class=${page === key ? 'active' : ''} onClick=${() => setPage(key)}>${title}</button>`)}
+            <span class="spacer"></span>
+            <span class="user">${user}</span>
+            <button onClick=${logout}>Выход</button>
+        </nav>
+        <main>
+            ${page === 'operations'
+                ? html`<${Operations} open=${open} version=${version} />`
+                : html`<${EntityPage} key=${page} type=${page} open=${open} version=${version} />`}
+        </main>
+        ${dialog?.kind === 'view' && html`<${ViewDialog} ...${dialog} open=${open} onClose=${close} version=${version} />`}
+        ${dialog?.kind === 'create' && html`<${FormDialog} type=${dialog.type} open=${open} onClose=${close} />`}
+        ${dialog?.kind === 'edit' && html`<${FormDialog} ...${dialog} open=${open} onClose=${close} />`}
+        ${dialog?.kind === 'delete' && html`<${DeleteDialog} ...${dialog} onClose=${close} />`}
+    `;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${App} />`);

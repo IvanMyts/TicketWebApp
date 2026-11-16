@@ -1,8 +1,10 @@
 package service;
 
-import dto.CountResponse;
-import dto.SellTicketRequest;
-import dto.TicketResponse;
+import dto.response.EntityChangeEvent;
+import dto.response.EntityChangeEvent.EntityType;
+import dto.response.CountResponse;
+import dto.request.SellTicketRequest;
+import dto.response.TicketResponse;
 import mapper.TicketMapper;
 import model.Coordinates;
 import model.Ticket;
@@ -26,6 +28,8 @@ public class SpecialOperationService {
     PersonService personService;
     @Inject
     TicketMapper mapper;
+    @Inject
+    javax.enterprise.event.Event<EntityChangeEvent> changes;
 
     /** Количество билетов, у которых number меньше заданного. */
     public CountResponse countByNumberLessThan(double number) {
@@ -49,6 +53,7 @@ public class SpecialOperationService {
         Ticket ticket = ticketService.findEntity(ticketId);
         ticket.setPerson(personService.findEntity(request.getPersonId()));
         ticket.setPrice(request.getPrice());
+        changed(ticketId);
         return mapper.toResponse(ticket);
     }
 
@@ -68,6 +73,11 @@ public class SpecialOperationService {
         copy.setVenue(source.getVenue());
 
         ticketRepository.save(copy);
+        changed(copy.getId());
         return mapper.toResponse(copy);
+    }
+
+    private void changed(long id) {
+        changes.fire(new EntityChangeEvent(EntityType.TICKET, id));
     }
 }

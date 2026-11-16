@@ -6,7 +6,6 @@ import model.Person;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
-import java.util.Optional;
 
 @ApplicationScoped
 public class PersonRepository extends BaseRepository<Person, Long> {
@@ -25,13 +24,6 @@ public class PersonRepository extends BaseRepository<Person, Long> {
             case "nationality" -> "CAST(p.nationality AS string)";
             default -> throw new InvalidRequestException("Недопустимая колонка: " + column);
         };
-    }
-
-    /** Человек с локацией (для окна просмотра). */
-    public Optional<Person> findDetailedById(long id) {
-        return em.createQuery(SELECT + " WHERE p.id = :id", Person.class)
-                .setParameter("id", id)
-                .getResultList().stream().findFirst();
     }
 
     public List<Person> findByLocation(Location location) {

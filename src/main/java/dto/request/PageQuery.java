@@ -1,4 +1,4 @@
-package dto;
+package dto.request;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -10,7 +10,7 @@ import lombok.*;
  * Параметры любой таблицы со списком объектов (Ticket, Person, Event, Venue, Location):
  * пагинация, сортировка и фильтр по неполному совпадению строковой колонки.
  * Используется через {@code @BeanParam}.
- * Допустимые значения sortBy/filterBy у каждой сущности свои и проверяются в её сервисе.
+ * Допустимые значения sortBy/filterBy у каждой сущности свои и проверяются в её репозитории.
  */
 @Data
 @NoArgsConstructor

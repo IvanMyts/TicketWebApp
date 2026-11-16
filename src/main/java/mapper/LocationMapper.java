@@ -1,7 +1,7 @@
 package mapper;
 
-import dto.LocationRequest;
-import dto.LocationResponse;
+import dto.request.LocationRequest;
+import dto.response.LocationResponse;
 import model.Location;
 
 import javax.enterprise.context.ApplicationScoped;

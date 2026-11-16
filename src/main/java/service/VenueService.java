@@ -1,11 +1,12 @@
 package service;
 
-import dto.VenueRequest;
-import dto.VenueResponse;
-import dto.PageQuery;
-import dto.PageResponse;
+import dto.response.EntityChangeEvent;
+import dto.response.EntityChangeEvent.EntityType;
+import dto.request.VenueRequest;
+import dto.response.VenueResponse;
+import dto.request.PageQuery;
+import dto.response.PageResponse;
 import exception.ConflictException;
-import exception.InvalidRequestException;
 import exception.ObjectNotFoundException;
 import mapper.VenueMapper;
 import model.Venue;
@@ -27,12 +28,14 @@ public class VenueService {
     TicketRepository ticketRepository;
     @Inject
     VenueMapper mapper;
+    @Inject
+    javax.enterprise.event.Event<EntityChangeEvent> changes;
 
     public PageResponse<VenueResponse> list(PageQuery query) {
         List<VenueResponse> content = repository.findPage(query).stream()
                 .map(mapper::toResponse)
                 .toList();
-        return PageResponse.of(content, query.getPage(), query.getSize(), repository.count(query));
+        return PageResponse.of(content, query.getSize(), repository.count(query));
     }
 
     public VenueResponse get(int id) {
@@ -40,12 +43,16 @@ public class VenueService {
     }
 
     public VenueResponse create(VenueRequest request) {
-        return mapper.toResponse(createEntity(request));
+        Venue entity = mapper.toEntity(request);
+        repository.save(entity);
+        changed(entity.getId());
+        return mapper.toResponse(entity);
     }
 
     public VenueResponse update(int id, VenueRequest request) {
         Venue entity = findEntity(id);
         mapper.update(entity, request);
+        changed(id);
         return mapper.toResponse(entity);
     }
 
@@ -57,13 +64,11 @@ public class VenueService {
             if (replacementId == null) {
                 throw new ConflictException("Площадка используется (билетов: " + tickets.size() + "). Выберите замену.");
             }
-            if (replacementId == id) {
-                throw new InvalidRequestException("Замена должна отличаться от удаляемой площадки");
-            }
             Venue replacement = findEntity(replacementId);
             tickets.forEach(ticket -> ticket.setVenue(replacement));
         }
         repository.delete(entity);
+        changed(id);
     }
 
     public Venue findEntity(int id) {
@@ -71,17 +76,7 @@ public class VenueService {
                 .orElseThrow(() -> new ObjectNotFoundException("Площадка с id " + id + " не найдена"));
     }
 
-    /** Связь при создании/изменении билета: существующий объект по id, новый из запроса или null. */
-    public Venue resolve(Integer id, VenueRequest request) {
-        if (id != null) {
-            return findEntity(id);
-        }
-        return request != null ? createEntity(request) : null;
-    }
-
-    private Venue createEntity(VenueRequest request) {
-        Venue entity = mapper.toEntity(request);
-        repository.save(entity);
-        return entity;
+    private void changed(long id) {
+        changes.fire(new EntityChangeEvent(EntityType.VENUE, id));
     }
 }

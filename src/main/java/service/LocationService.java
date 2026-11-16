@@ -1,11 +1,12 @@
 package service;
 
-import dto.LocationRequest;
-import dto.LocationResponse;
-import dto.PageQuery;
-import dto.PageResponse;
+import dto.response.EntityChangeEvent;
+import dto.response.EntityChangeEvent.EntityType;
+import dto.request.LocationRequest;
+import dto.response.LocationResponse;
+import dto.request.PageQuery;
+import dto.response.PageResponse;
 import exception.ConflictException;
-import exception.InvalidRequestException;
 import exception.ObjectNotFoundException;
 import mapper.LocationMapper;
 import model.Location;
@@ -27,12 +28,14 @@ public class LocationService {
     PersonRepository personRepository;
     @Inject
     LocationMapper mapper;
+    @Inject
+    javax.enterprise.event.Event<EntityChangeEvent> changes;
 
     public PageResponse<LocationResponse> list(PageQuery query) {
         List<LocationResponse> content = locationRepository.findPage(query).stream()
                 .map(mapper::toResponse)
                 .toList();
-        return PageResponse.of(content, query.getPage(), query.getSize(), locationRepository.count(query));
+        return PageResponse.of(content, query.getSize(), locationRepository.count(query));
     }
 
     public LocationResponse get(long id) {
@@ -40,12 +43,16 @@ public class LocationService {
     }
 
     public LocationResponse create(LocationRequest request) {
-        return mapper.toResponse(createEntity(request));
+        Location location = mapper.toEntity(request);
+        locationRepository.save(location);
+        changed(location.getId());
+        return mapper.toResponse(location);
     }
 
     public LocationResponse update(long id, LocationRequest request) {
         Location location = findEntity(id);
         mapper.update(location, request);
+        changed(id);
         return mapper.toResponse(location);
     }
 
@@ -57,13 +64,11 @@ public class LocationService {
             if (replacementId == null) {
                 throw new ConflictException("Локация используется (людей: " + persons.size() + "). Выберите замену.");
             }
-            if (replacementId == id) {
-                throw new InvalidRequestException("Замена должна отличаться от удаляемой локации");
-            }
             Location replacement = findEntity(replacementId);
             persons.forEach(person -> person.setLocation(replacement));
         }
         locationRepository.delete(location);
+        changed(id);
     }
 
     public Location findEntity(long id) {
@@ -71,17 +76,7 @@ public class LocationService {
                 .orElseThrow(() -> new ObjectNotFoundException("Локация с id " + id + " не найдена"));
     }
 
-    /** Связь при создании/изменении другого объекта: существующая по id, новая из запроса или null. */
-    public Location resolve(Long id, LocationRequest request) {
-        if (id != null) {
-            return findEntity(id);
-        }
-        return request != null ? createEntity(request) : null;
-    }
-
-    private Location createEntity(LocationRequest request) {
-        Location location = mapper.toEntity(request);
-        locationRepository.save(location);
-        return location;
+    private void changed(long id) {
+        changes.fire(new EntityChangeEvent(EntityType.LOCATION, id));
     }
 }

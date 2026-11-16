@@ -1,7 +1,7 @@
 package mapper;
 
-import dto.EventRequest;
-import dto.EventResponse;
+import dto.request.EventRequest;
+import dto.response.EventResponse;
 import model.Event;
 
 import javax.enterprise.context.ApplicationScoped;

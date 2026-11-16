@@ -1,11 +1,12 @@
 package service;
 
-import dto.PageQuery;
-import dto.PageResponse;
-import dto.PersonRequest;
-import dto.PersonResponse;
+import dto.response.EntityChangeEvent;
+import dto.response.EntityChangeEvent.EntityType;
+import dto.request.PageQuery;
+import dto.response.PageResponse;
+import dto.request.PersonRequest;
+import dto.response.PersonResponse;
 import exception.ConflictException;
-import exception.InvalidRequestException;
 import exception.ObjectNotFoundException;
 import mapper.PersonMapper;
 import model.Person;
@@ -29,28 +30,33 @@ public class PersonService {
     LocationService locationService;
     @Inject
     PersonMapper mapper;
+    @Inject
+    javax.enterprise.event.Event<EntityChangeEvent> changes;
 
     public PageResponse<PersonResponse> list(PageQuery query) {
         List<PersonResponse> content = personRepository.findPage(query).stream()
                 .map(mapper::toResponse)
                 .toList();
-        return PageResponse.of(content, query.getPage(), query.getSize(), personRepository.count(query));
+        return PageResponse.of(content, query.getSize(), personRepository.count(query));
     }
 
     public PersonResponse get(long id) {
-        return personRepository.findDetailedById(id)
-                .map(mapper::toResponse)
-                .orElseThrow(() -> notFound(id));
+        return mapper.toResponse(findEntity(id));
     }
 
     public PersonResponse create(PersonRequest request) {
-        return mapper.toResponse(createEntity(request));
+        Person person = mapper.toEntity(request);
+        person.setLocation(request.getLocationId() == null ? null : locationService.findEntity(request.getLocationId()));
+        personRepository.save(person);
+        changed(person.getId());
+        return mapper.toResponse(person);
     }
 
     public PersonResponse update(long id, PersonRequest request) {
         Person person = findEntity(id);
         mapper.update(person, request);
-        person.setLocation(locationService.resolve(request.getLocationId(), request.getLocation()));
+        person.setLocation(request.getLocationId() == null ? null : locationService.findEntity(request.getLocationId()));
+        changed(id);
         return mapper.toResponse(person);
     }
 
@@ -62,35 +68,19 @@ public class PersonService {
             if (replacementId == null) {
                 throw new ConflictException("Человек используется (билетов: " + tickets.size() + "). Выберите замену.");
             }
-            if (replacementId == id) {
-                throw new InvalidRequestException("Замена должна отличаться от удаляемого человека");
-            }
             Person replacement = findEntity(replacementId);
             tickets.forEach(ticket -> ticket.setPerson(replacement));
         }
         personRepository.delete(person);
+        changed(id);
     }
 
     public Person findEntity(long id) {
-        return personRepository.findById(id).orElseThrow(() -> notFound(id));
+        return personRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Человек с id " + id + " не найден"));
     }
 
-    /** Связь при создании/изменении билета: существующий человек по id, новый из запроса или null. */
-    public Person resolve(Long id, PersonRequest request) {
-        if (id != null) {
-            return findEntity(id);
-        }
-        return request != null ? createEntity(request) : null;
-    }
 
-    private Person createEntity(PersonRequest request) {
-        Person person = mapper.toEntity(request);
-        person.setLocation(locationService.resolve(request.getLocationId(), request.getLocation()));
-        personRepository.save(person);
-        return person;
-    }
-
-    private ObjectNotFoundException notFound(long id) {
-        return new ObjectNotFoundException("Человек с id " + id + " не найден");
+    private void changed(long id) {
+        changes.fire(new EntityChangeEvent(EntityType.PERSON, id));
     }
 }

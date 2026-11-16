@@ -1,6 +1,6 @@
 package repository;
 
-import dto.PageQuery;
+import dto.request.PageQuery;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -68,10 +68,6 @@ public abstract class BaseRepository<T, ID> {
 
     public void delete(T entity) {
         em.remove(entity);
-    }
-
-    public void flush() {
-        em.flush();
     }
 
     private String where(PageQuery query) {
