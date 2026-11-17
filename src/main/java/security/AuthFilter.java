@@ -1,5 +1,7 @@
 package security;
 
+import websocket.ChangesEndpoint;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebFilter;
@@ -25,5 +27,10 @@ public class AuthFilter extends HttpFilter {
             return;
         }
         chain.doFilter(request, response);
+        boolean changing = !"GET".equals(request.getMethod())
+                && path.startsWith("/api/") && !path.startsWith("/api/auth/");
+        if (changing && response.getStatus() < 400) {
+            ChangesEndpoint.broadcast("changed");
+        }
     }
 }

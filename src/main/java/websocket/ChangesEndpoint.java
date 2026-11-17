@@ -27,10 +27,12 @@ public class ChangesEndpoint {
         SESSIONS.remove(session);
     }
 
-    static void broadcast(String message) {
+    public static void broadcast(String message) {
         for (Session session : SESSIONS) {
-            if (session.isOpen()) {
+            try {
                 session.getAsyncRemote().sendText(message);
+            } catch (RuntimeException e) {
+                SESSIONS.remove(session);
             }
         }
     }

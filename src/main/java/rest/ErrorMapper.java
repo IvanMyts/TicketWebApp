@@ -6,6 +6,7 @@ import exception.InvalidRequestException;
 import exception.ObjectNotFoundException;
 
 import javax.persistence.PersistenceException;
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -14,6 +15,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Provider
 public class ErrorMapper implements ExceptionMapper<Exception> {
@@ -32,7 +34,11 @@ public class ErrorMapper implements ExceptionMapper<Exception> {
                 return response(400, cause.getMessage());
             }
             if (cause instanceof ConstraintViolationException violation) {
-                return ValidationErrorMapper.toResponse400(violation);
+                String message = violation.getConstraintViolations().stream()
+                        .map(ConstraintViolation::getMessage)
+                        .distinct()
+                        .collect(Collectors.joining("; "));
+                return response(400, message.isEmpty() ? "Проверьте значения полей" : message);
             }
             if (cause instanceof PersistenceException) {
                 LOG.log(Level.WARNING, "Ошибка базы данных", exception);

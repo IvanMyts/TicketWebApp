@@ -1,7 +1,5 @@
 package model;
 
-import websocket.ChangeListener;
-
 import lombok.*;
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -10,7 +8,6 @@ import javax.validation.constraints.*;
 @Setter
 @NoArgsConstructor
 @Entity
-@EntityListeners(ChangeListener.class)
 @Table(name = "venue")
 public class Venue {
     @Id

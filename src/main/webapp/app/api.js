@@ -36,14 +36,27 @@ export async function api(path, { method = 'GET', body, query } = {}) {
 export function subscribeToChanges(onChange) {
     let socket;
     let stopped = false;
+    let reconnecting = false;
     const connect = () => {
         const url = new URL('ws/changes', location.href);
         url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
         url.hash = '';
         socket = new WebSocket(url);
-        socket.onmessage = (event) => onChange(JSON.parse(event.data));
-        socket.onclose = () => {
-            if (!stopped) setTimeout(connect, 2000);
+        socket.onopen = () => {
+            if (reconnecting) onChange();
+            reconnecting = false;
+        };
+        socket.onmessage = () => onChange();
+        socket.onclose = async () => {
+            if (stopped) return;
+            reconnecting = true;
+            const me = await fetch('api/auth/me').catch(() => null);
+            if (stopped) return;
+            if (me && me.status === 401) {
+                onUnauthorized();
+                return;
+            }
+            setTimeout(connect, 2000);
         };
     };
     connect();
