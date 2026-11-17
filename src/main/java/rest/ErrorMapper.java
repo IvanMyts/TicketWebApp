@@ -5,10 +5,8 @@ import exception.ConflictException;
 import exception.InvalidRequestException;
 import exception.ObjectNotFoundException;
 
-import javax.persistence.PersistenceException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -30,9 +28,8 @@ public class ErrorMapper implements ExceptionMapper<Exception> {
                 return response(400, cause.getMessage());
             }
             if (cause instanceof ConstraintViolationException) {
-                ConstraintViolationException violation = (ConstraintViolationException) cause;
                 StringBuilder message = new StringBuilder();
-                for (ConstraintViolation<?> item : violation.getConstraintViolations()) {
+                for (ConstraintViolation<?> item : ((ConstraintViolationException) cause).getConstraintViolations()) {
                     if (message.length() > 0) {
                         message.append("; ");
                     }
@@ -40,25 +37,8 @@ public class ErrorMapper implements ExceptionMapper<Exception> {
                 }
                 return response(400, message.toString());
             }
-            if (cause instanceof PersistenceException) {
-                return response(409, "Операция нарушает ограничения данных");
-            }
-            if (cause instanceof WebApplicationException) {
-                int status = ((WebApplicationException) cause).getResponse().getStatus();
-                String message = "Не удалось выполнить запрос";
-                if (status == 400) {
-                    message = "Некорректный запрос: проверьте формат JSON и типы значений";
-                } else if (status == 404) {
-                    message = "Адрес не найден";
-                } else if (status == 405) {
-                    message = "Метод запроса не поддерживается";
-                } else if (status == 415) {
-                    message = "Отправьте данные в формате JSON";
-                }
-                return response(status, message);
-            }
         }
-        return response(500, "Внутренняя ошибка сервера");
+        return response(400, "Некорректный запрос");
     }
 
     private static Response response(int status, String message) {
