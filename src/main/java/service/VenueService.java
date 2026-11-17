@@ -15,6 +15,7 @@ import repository.TicketRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -26,9 +27,10 @@ public class VenueService {
     TicketRepository ticketRepository;
 
     public PageResponse<VenueResponse> list(PageQuery query) {
-        List<VenueResponse> content = repository.findPage(query).stream()
-                .map(VenueMapper::toResponse)
-                .toList();
+        List<VenueResponse> content = new ArrayList<>();
+        for (Venue item : repository.findPage(query)) {
+            content.add(VenueMapper.toResponse(item));
+        }
         return PageResponse.of(content, query.getSize(), repository.count(query));
     }
 
@@ -56,13 +58,18 @@ public class VenueService {
                 throw new ConflictException("Площадка используется (билетов: " + tickets.size() + "). Выберите замену.");
             }
             Venue replacement = findEntity(replacementId);
-            tickets.forEach(ticket -> ticket.setVenue(replacement));
+            for (Ticket ticket : tickets) {
+                ticket.setVenue(replacement);
+            }
         }
         repository.delete(entity);
     }
 
     public Venue findEntity(int id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException("Площадка с id " + id + " не найдена"));
+        Venue found = repository.findById(id);
+        if (found == null) {
+            throw new ObjectNotFoundException("Площадка с id " + id + " не найдена");
+        }
+        return found;
     }
 }

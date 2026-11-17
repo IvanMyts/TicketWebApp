@@ -15,6 +15,7 @@ import repository.TicketRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -26,9 +27,10 @@ public class EventService {
     TicketRepository ticketRepository;
 
     public PageResponse<EventResponse> list(PageQuery query) {
-        List<EventResponse> content = repository.findPage(query).stream()
-                .map(EventMapper::toResponse)
-                .toList();
+        List<EventResponse> content = new ArrayList<>();
+        for (Event item : repository.findPage(query)) {
+            content.add(EventMapper.toResponse(item));
+        }
         return PageResponse.of(content, query.getSize(), repository.count(query));
     }
 
@@ -56,13 +58,18 @@ public class EventService {
                 throw new ConflictException("Мероприятие используется (билетов: " + tickets.size() + "). Выберите замену.");
             }
             Event replacement = findEntity(replacementId);
-            tickets.forEach(ticket -> ticket.setEvent(replacement));
+            for (Ticket ticket : tickets) {
+                ticket.setEvent(replacement);
+            }
         }
         repository.delete(entity);
     }
 
     public Event findEntity(int id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException("Мероприятие с id " + id + " не найдено"));
+        Event found = repository.findById(id);
+        if (found == null) {
+            throw new ObjectNotFoundException("Мероприятие с id " + id + " не найдено");
+        }
+        return found;
     }
 }

@@ -16,7 +16,7 @@ public class AuthService {
     UserRepository userRepository;
 
     public boolean register(AuthRequest request) {
-        if (userRepository.findByLogin(request.getLogin()).isPresent()) {
+        if (userRepository.findByLogin(request.getLogin()) != null) {
             return false;
         }
         User user = new User();
@@ -27,8 +27,10 @@ public class AuthService {
     }
 
     public boolean authenticate(AuthRequest request) {
-        return userRepository.findByLogin(request.getLogin())
-                .map(user -> BCrypt.checkpw(request.getPassword(), user.getHashPassword()))
-                .orElse(false);
+        User user = userRepository.findByLogin(request.getLogin());
+        if (user == null) {
+            return false;
+        }
+        return BCrypt.checkpw(request.getPassword(), user.getHashPassword());
     }
 }

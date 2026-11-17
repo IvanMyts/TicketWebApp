@@ -12,6 +12,7 @@ import repository.TicketRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -29,9 +30,11 @@ public class SpecialOperationService {
     }
 
     public List<TicketResponse> findByNamePrefix(String prefix) {
-        return ticketRepository.findByNameStartingWith(prefix).stream()
-                .map(TicketMapper::toResponse)
-                .toList();
+        List<TicketResponse> result = new ArrayList<>();
+        for (Ticket ticket : ticketRepository.findByNameStartingWith(prefix)) {
+            result.add(TicketMapper.toResponse(ticket));
+        }
+        return result;
     }
 
     public List<Double> distinctNumbers() {

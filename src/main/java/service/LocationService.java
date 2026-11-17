@@ -15,6 +15,7 @@ import repository.PersonRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -26,9 +27,10 @@ public class LocationService {
     PersonRepository personRepository;
 
     public PageResponse<LocationResponse> list(PageQuery query) {
-        List<LocationResponse> content = locationRepository.findPage(query).stream()
-                .map(LocationMapper::toResponse)
-                .toList();
+        List<LocationResponse> content = new ArrayList<>();
+        for (Location item : locationRepository.findPage(query)) {
+            content.add(LocationMapper.toResponse(item));
+        }
         return PageResponse.of(content, query.getSize(), locationRepository.count(query));
     }
 
@@ -56,13 +58,18 @@ public class LocationService {
                 throw new ConflictException("Локация используется (людей: " + persons.size() + "). Выберите замену.");
             }
             Location replacement = findEntity(replacementId);
-            persons.forEach(person -> person.setLocation(replacement));
+            for (Person person : persons) {
+                person.setLocation(replacement);
+            }
         }
         locationRepository.delete(location);
     }
 
     public Location findEntity(long id) {
-        return locationRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException("Локация с id " + id + " не найдена"));
+        Location found = locationRepository.findById(id);
+        if (found == null) {
+            throw new ObjectNotFoundException("Локация с id " + id + " не найдена");
+        }
+        return found;
     }
 }

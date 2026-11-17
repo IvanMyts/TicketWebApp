@@ -12,6 +12,7 @@ import repository.TicketRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -27,9 +28,10 @@ public class TicketService {
     VenueService venueService;
 
     public PageResponse<TicketResponse> list(PageQuery query) {
-        List<TicketResponse> content = ticketRepository.findPage(query).stream()
-                .map(TicketMapper::toResponse)
-                .toList();
+        List<TicketResponse> content = new ArrayList<>();
+        for (Ticket item : ticketRepository.findPage(query)) {
+            content.add(TicketMapper.toResponse(item));
+        }
         return PageResponse.of(content, query.getSize(), ticketRepository.count(query));
     }
 
@@ -56,12 +58,25 @@ public class TicketService {
     }
 
     public Ticket findEntity(long id) {
-        return ticketRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Билет с id " + id + " не найден"));
+        Ticket found = ticketRepository.findById(id);
+        if (found == null) {
+            throw new ObjectNotFoundException("Билет с id " + id + " не найден");
+        }
+        return found;
     }
 
     private void fillRelations(Ticket ticket, TicketRequest request) {
-        ticket.setPerson(request.getPersonId() == null ? null : personService.findEntity(request.getPersonId()));
-        ticket.setEvent(request.getEventId() == null ? null : eventService.findEntity(request.getEventId()));
-        ticket.setVenue(request.getVenueId() == null ? null : venueService.findEntity(request.getVenueId()));
+        ticket.setPerson(null);
+        if (request.getPersonId() != null) {
+            ticket.setPerson(personService.findEntity(request.getPersonId()));
+        }
+        ticket.setEvent(null);
+        if (request.getEventId() != null) {
+            ticket.setEvent(eventService.findEntity(request.getEventId()));
+        }
+        ticket.setVenue(null);
+        if (request.getVenueId() != null) {
+            ticket.setVenue(venueService.findEntity(request.getVenueId()));
+        }
     }
 }

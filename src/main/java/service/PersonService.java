@@ -15,6 +15,7 @@ import repository.TicketRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -28,9 +29,10 @@ public class PersonService {
     LocationService locationService;
 
     public PageResponse<PersonResponse> list(PageQuery query) {
-        List<PersonResponse> content = personRepository.findPage(query).stream()
-                .map(PersonMapper::toResponse)
-                .toList();
+        List<PersonResponse> content = new ArrayList<>();
+        for (Person item : personRepository.findPage(query)) {
+            content.add(PersonMapper.toResponse(item));
+        }
         return PageResponse.of(content, query.getSize(), personRepository.count(query));
     }
 
@@ -40,7 +42,7 @@ public class PersonService {
 
     public PersonResponse create(PersonRequest request) {
         Person person = PersonMapper.toEntity(request);
-        person.setLocation(request.getLocationId() == null ? null : locationService.findEntity(request.getLocationId()));
+        setLocation(person, request);
         personRepository.save(person);
         return PersonMapper.toResponse(person);
     }
@@ -48,7 +50,7 @@ public class PersonService {
     public PersonResponse update(long id, PersonRequest request) {
         Person person = findEntity(id);
         PersonMapper.update(person, request);
-        person.setLocation(request.getLocationId() == null ? null : locationService.findEntity(request.getLocationId()));
+        setLocation(person, request);
         return PersonMapper.toResponse(person);
     }
 
@@ -60,13 +62,26 @@ public class PersonService {
                 throw new ConflictException("Человек используется (билетов: " + tickets.size() + "). Выберите замену.");
             }
             Person replacement = findEntity(replacementId);
-            tickets.forEach(ticket -> ticket.setPerson(replacement));
+            for (Ticket ticket : tickets) {
+                ticket.setPerson(replacement);
+            }
         }
         personRepository.delete(person);
     }
 
+    private void setLocation(Person person, PersonRequest request) {
+        person.setLocation(null);
+        if (request.getLocationId() != null) {
+            person.setLocation(locationService.findEntity(request.getLocationId()));
+        }
+    }
+
     public Person findEntity(long id) {
-        return personRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Человек с id " + id + " не найден"));
+        Person found = personRepository.findById(id);
+        if (found == null) {
+            throw new ObjectNotFoundException("Человек с id " + id + " не найден");
+        }
+        return found;
     }
 
 }
