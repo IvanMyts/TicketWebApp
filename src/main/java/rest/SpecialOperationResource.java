@@ -1,8 +1,6 @@
 package rest;
 
-import dto.response.CountResponse;
 import dto.request.SellTicketRequest;
-import dto.response.TicketResponse;
 import service.SpecialOperationService;
 
 import javax.enterprise.context.RequestScoped;
@@ -12,7 +10,6 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 @Path("operations")
 @RequestScoped
@@ -24,34 +21,34 @@ public class SpecialOperationResource {
 
     @GET
     @Path("count-number-less-than")
-    public CountResponse countByNumberLessThan(
+    public Response countByNumberLessThan(
             @NotNull(message = "Укажите число") @QueryParam("number") Double number) {
-        return service.countByNumberLessThan(number);
+        return Response.status(200).entity(service.countByNumberLessThan(number)).build();
     }
 
     @GET
     @Path("name-starts-with")
-    public List<TicketResponse> findByNamePrefix(
+    public Response findByNamePrefix(
             @NotNull(message = "Укажите подстроку") @QueryParam("prefix") String prefix) {
-        return service.findByNamePrefix(prefix);
+        return Response.status(200).entity(service.findByNamePrefix(prefix)).build();
     }
 
     @GET
     @Path("distinct-numbers")
-    public List<Double> distinctNumbers() {
-        return service.distinctNumbers();
+    public Response distinctNumbers() {
+        return Response.status(200).entity(service.distinctNumbers()).build();
     }
 
     @POST
     @Path("tickets/{id}/sell")
-    public TicketResponse sell(@PathParam("id") long id,
+    public Response sell(@PathParam("id") long id,
                                @NotNull(message = "Тело запроса обязательно") @Valid SellTicketRequest request) {
-        return service.sell(id, request);
+        return Response.status(200).entity(service.sell(id, request)).build();
     }
 
     @POST
     @Path("tickets/{id}/copy-vip")
     public Response copyAsVip(@PathParam("id") long id) {
-        return Response.status(Response.Status.CREATED).entity(service.copyAsVip(id)).build();
+        return Response.status(201).entity(service.copyAsVip(id)).build();
     }
 }

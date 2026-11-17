@@ -2,6 +2,7 @@ package rest;
 
 import dto.request.AuthRequest;
 import dto.response.AuthResponse;
+import dto.response.ErrorResponse;
 import service.AuthService;
 
 import javax.enterprise.context.RequestScoped;
@@ -29,37 +30,38 @@ public class AuthResource {
     @Path("register")
     public Response register(@NotNull(message = "Тело запроса обязательно") @Valid AuthRequest body) {
         if (!authService.register(body)) {
-            return ErrorMapper.response(409, "Этот логин уже занят");
+            return Response.status(409).entity(new ErrorResponse("Этот логин уже занят")).build();
         }
-        return Response.status(Response.Status.CREATED).entity(new AuthResponse(body.getLogin())).build();
+        return Response.status(201).entity(new AuthResponse(body.getLogin())).build();
     }
 
     @POST
     @Path("login")
     public Response login(@NotNull(message = "Тело запроса обязательно") @Valid AuthRequest body) {
         if (!authService.authenticate(body)) {
-            return ErrorMapper.response(401, "Неверный логин или пароль");
+            return Response.status(401).entity(new ErrorResponse("Неверный логин или пароль")).build();
         }
         HttpSession old = request.getSession(false);
         if (old != null) {
             old.invalidate();
         }
         request.getSession(true).setAttribute("login", body.getLogin());
-        return Response.ok(new AuthResponse(body.getLogin())).build();
+        return Response.status(200).entity(new AuthResponse(body.getLogin())).build();
     }
 
     @GET
     @Path("me")
-    public AuthResponse me() {
-        return new AuthResponse((String) request.getSession().getAttribute("login"));
+    public Response me() {
+        return Response.status(200).entity(new AuthResponse((String) request.getSession().getAttribute("login"))).build();
     }
 
     @POST
     @Path("logout")
-    public void logout() {
+    public Response logout() {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
+        return Response.status(204).build();
     }
 }

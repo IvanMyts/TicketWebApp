@@ -1,9 +1,7 @@
 package rest;
 
 import dto.request.PageQuery;
-import dto.response.PageResponse;
 import dto.request.EventRequest;
-import dto.response.EventResponse;
 import service.EventService;
 
 import javax.enterprise.context.RequestScoped;
@@ -23,31 +21,32 @@ public class EventResource {
     EventService service;
 
     @GET
-    public PageResponse<EventResponse> list(@Valid @BeanParam PageQuery query) {
-        return service.list(query);
+    public Response list(@Valid @BeanParam PageQuery query) {
+        return Response.status(200).entity(service.list(query)).build();
     }
 
     @GET
     @Path("{id}")
-    public EventResponse get(@PathParam("id") int id) {
-        return service.get(id);
+    public Response get(@PathParam("id") int id) {
+        return Response.status(200).entity(service.get(id)).build();
     }
 
     @POST
     public Response create(@NotNull(message = "Тело запроса обязательно") @Valid EventRequest request) {
-        return Response.status(Response.Status.CREATED).entity(service.create(request)).build();
+        return Response.status(201).entity(service.create(request)).build();
     }
 
     @PUT
     @Path("{id}")
-    public EventResponse update(@PathParam("id") int id,
+    public Response update(@PathParam("id") int id,
                              @NotNull(message = "Тело запроса обязательно") @Valid EventRequest request) {
-        return service.update(id, request);
+        return Response.status(200).entity(service.update(id, request)).build();
     }
 
     @DELETE
     @Path("{id}")
-    public void delete(@PathParam("id") int id, @QueryParam("replacementId") Integer replacementId) {
+    public Response delete(@PathParam("id") int id, @QueryParam("replacementId") Integer replacementId) {
         service.delete(id, replacementId);
+        return Response.status(204).build();
     }
 }

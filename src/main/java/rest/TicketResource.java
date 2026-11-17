@@ -1,9 +1,7 @@
 package rest;
 
 import dto.request.PageQuery;
-import dto.response.PageResponse;
 import dto.request.TicketRequest;
-import dto.response.TicketResponse;
 import service.TicketService;
 
 import javax.enterprise.context.RequestScoped;
@@ -23,31 +21,32 @@ public class TicketResource {
     TicketService ticketService;
 
     @GET
-    public PageResponse<TicketResponse> list(@Valid @BeanParam PageQuery query) {
-        return ticketService.list(query);
+    public Response list(@Valid @BeanParam PageQuery query) {
+        return Response.status(200).entity(ticketService.list(query)).build();
     }
 
     @GET
     @Path("{id}")
-    public TicketResponse get(@PathParam("id") long id) {
-        return ticketService.get(id);
+    public Response get(@PathParam("id") long id) {
+        return Response.status(200).entity(ticketService.get(id)).build();
     }
 
     @POST
     public Response create(@NotNull(message = "Тело запроса обязательно") @Valid TicketRequest request) {
-        return Response.status(Response.Status.CREATED).entity(ticketService.create(request)).build();
+        return Response.status(201).entity(ticketService.create(request)).build();
     }
 
     @PUT
     @Path("{id}")
-    public TicketResponse update(@PathParam("id") long id,
+    public Response update(@PathParam("id") long id,
                                  @NotNull(message = "Тело запроса обязательно") @Valid TicketRequest request) {
-        return ticketService.update(id, request);
+        return Response.status(200).entity(ticketService.update(id, request)).build();
     }
 
     @DELETE
     @Path("{id}")
-    public void delete(@PathParam("id") long id) {
+    public Response delete(@PathParam("id") long id) {
         ticketService.delete(id);
+        return Response.status(204).build();
     }
 }

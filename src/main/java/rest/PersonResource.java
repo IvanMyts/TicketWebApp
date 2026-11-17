@@ -1,9 +1,7 @@
 package rest;
 
 import dto.request.PageQuery;
-import dto.response.PageResponse;
 import dto.request.PersonRequest;
-import dto.response.PersonResponse;
 import service.PersonService;
 
 import javax.enterprise.context.RequestScoped;
@@ -23,31 +21,32 @@ public class PersonResource {
     PersonService service;
 
     @GET
-    public PageResponse<PersonResponse> list(@Valid @BeanParam PageQuery query) {
-        return service.list(query);
+    public Response list(@Valid @BeanParam PageQuery query) {
+        return Response.status(200).entity(service.list(query)).build();
     }
 
     @GET
     @Path("{id}")
-    public PersonResponse get(@PathParam("id") long id) {
-        return service.get(id);
+    public Response get(@PathParam("id") long id) {
+        return Response.status(200).entity(service.get(id)).build();
     }
 
     @POST
     public Response create(@NotNull(message = "Тело запроса обязательно") @Valid PersonRequest request) {
-        return Response.status(Response.Status.CREATED).entity(service.create(request)).build();
+        return Response.status(201).entity(service.create(request)).build();
     }
 
     @PUT
     @Path("{id}")
-    public PersonResponse update(@PathParam("id") long id,
+    public Response update(@PathParam("id") long id,
                              @NotNull(message = "Тело запроса обязательно") @Valid PersonRequest request) {
-        return service.update(id, request);
+        return Response.status(200).entity(service.update(id, request)).build();
     }
 
     @DELETE
     @Path("{id}")
-    public void delete(@PathParam("id") long id, @QueryParam("replacementId") Long replacementId) {
+    public Response delete(@PathParam("id") long id, @QueryParam("replacementId") Long replacementId) {
         service.delete(id, replacementId);
+        return Response.status(204).build();
     }
 }

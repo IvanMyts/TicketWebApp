@@ -61,7 +61,7 @@ public class ErrorMapper implements ExceptionMapper<Exception> {
         return response(500, "Внутренняя ошибка сервера");
     }
 
-    public static Response response(int status, String message) {
+    private static Response response(int status, String message) {
         return Response.status(status)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(new ErrorResponse(message))
