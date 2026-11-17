@@ -6,18 +6,21 @@ import model.Venue;
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class VenueRepository extends BaseRepository<Venue, Integer> {
+public class VenueRepository extends BaseRepository<Venue> {
 
     public VenueRepository() {
-        super(Venue.class, "v", "SELECT v FROM Venue v");
+        super("Venue", "SELECT e FROM Venue e");
     }
 
     @Override
     protected String textColumn(String column) {
-        return switch (column) {
-            case "name" -> "v.name";
-            case "type" -> "CAST(v.type AS string)";
-            default -> throw new InvalidRequestException("Недопустимая колонка: " + column);
-        };
+        switch (column) {
+            case "name":
+                return "e.name";
+            case "type":
+                return "CAST(e.type AS string)";
+            default:
+                throw new InvalidRequestException("Недопустимая колонка: " + column);
+        }
     }
 }

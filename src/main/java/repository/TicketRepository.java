@@ -7,22 +7,25 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 @ApplicationScoped
-public class TicketRepository extends BaseRepository<Ticket, Long> {
-    private static final String SELECT = "SELECT t FROM Ticket t"
-            + " LEFT JOIN FETCH t.person p LEFT JOIN FETCH p.location"
-            + " LEFT JOIN FETCH t.event LEFT JOIN FETCH t.venue";
+public class TicketRepository extends BaseRepository<Ticket> {
+    private static final String SELECT = "SELECT e FROM Ticket e"
+            + " LEFT JOIN FETCH e.person p LEFT JOIN FETCH p.location"
+            + " LEFT JOIN FETCH e.event LEFT JOIN FETCH e.venue";
 
     public TicketRepository() {
-        super(Ticket.class, "t", SELECT);
+        super("Ticket", SELECT);
     }
 
     @Override
     protected String textColumn(String column) {
-        return switch (column) {
-            case "name" -> "t.name";
-            case "type" -> "CAST(t.type AS string)";
-            default -> throw new InvalidRequestException("Недопустимая колонка: " + column);
-        };
+        switch (column) {
+            case "name":
+                return "e.name";
+            case "type":
+                return "CAST(e.type AS string)";
+            default:
+                throw new InvalidRequestException("Недопустимая колонка: " + column);
+        }
     }
 
     public List<Ticket> findReferencing(String relation, Object entity) {
@@ -38,7 +41,7 @@ public class TicketRepository extends BaseRepository<Ticket, Long> {
     }
 
     public List<Ticket> findByNameStartingWith(String prefix) {
-        return em.createQuery(SELECT + " WHERE LOCATE(:prefix, t.name) = 1 ORDER BY t.id", Ticket.class)
+        return em.createQuery(SELECT + " WHERE LOCATE(:prefix, e.name) = 1 ORDER BY e.id", Ticket.class)
                 .setParameter("prefix", prefix)
                 .getResultList();
     }

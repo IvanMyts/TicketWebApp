@@ -4,81 +4,80 @@ import dto.request.PageQuery;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.persistence.Query;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 
-public abstract class BaseRepository<T, ID> {
+public abstract class BaseRepository<T> {
 
     @PersistenceContext
     protected EntityManager em;
 
-    private final Class<T> type;
-    private final String alias;
+    private final String entity;
     private final String select;
 
-    protected BaseRepository(Class<T> type, String alias, String select) {
-        this.type = type;
-        this.alias = alias;
+    protected BaseRepository(String entity, String select) {
+        this.entity = entity;
         this.select = select;
     }
 
     protected abstract String textColumn(String column);
 
-    public List<T> findPage(PageQuery query) {
-        TypedQuery<T> typedQuery = em.createQuery(select + where(query) + orderBy(query), type);
-        setFilter(typedQuery, query);
-        return typedQuery
-                .setFirstResult(query.getPage() * query.getSize())
-                .setMaxResults(query.getSize())
-                .getResultList();
+    public T findById(Object id) {
+        Query query = em.createQuery("SELECT e FROM " + entity + " e WHERE e.id = :id");
+        query.setParameter("id", id);
+        List<T> found = query.getResultList();
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
     }
 
-    public long count(PageQuery query) {
-        String jpql = "SELECT COUNT(" + alias + ") FROM " + type.getSimpleName() + " " + alias + where(query);
-        TypedQuery<Long> typedQuery = em.createQuery(jpql, Long.class);
-        setFilter(typedQuery, query);
-        return typedQuery.getSingleResult();
+    public void save(T item) {
+        em.persist(item);
     }
 
-    public Optional<T> findById(ID id) {
-        return Optional.ofNullable(em.find(type, id));
+    public void delete(T item) {
+        em.remove(item);
     }
 
-    public void save(T entity) {
-        em.persist(entity);
+    public List<T> findPage(PageQuery page) {
+        Query query = em.createQuery(select + where(page) + orderBy(page));
+        if (hasFilter(page)) {
+            query.setParameter("filter", page.getFilterValue().toLowerCase());
+        }
+        query.setFirstResult(page.getPage() * page.getSize());
+        query.setMaxResults(page.getSize());
+        return query.getResultList();
     }
 
-    public void delete(T entity) {
-        em.remove(entity);
+    public long count(PageQuery page) {
+        Query query = em.createQuery("SELECT COUNT(e) FROM " + entity + " e" + where(page));
+        if (hasFilter(page)) {
+            query.setParameter("filter", page.getFilterValue().toLowerCase());
+        }
+        return (Long) query.getSingleResult();
     }
 
-    private String where(PageQuery query) {
-        if (!hasFilter(query)) {
+    private boolean hasFilter(PageQuery page) {
+        return page.getFilterBy() != null && page.getFilterValue() != null && !page.getFilterValue().isEmpty();
+    }
+
+    private String where(PageQuery page) {
+        if (!hasFilter(page)) {
             return "";
         }
-        return " WHERE LOCATE(:filter, " + lowerText(query.getFilterBy()) + ") > 0";
+        return " WHERE LOCATE(:filter, LOWER(" + textColumn(page.getFilterBy()) + ")) > 0";
     }
 
-    private String orderBy(PageQuery query) {
-        String sortBy = query.getSortBy();
-        String column = sortBy == null || "id".equals(sortBy) ? alias + ".id" : lowerText(sortBy);
-        return " ORDER BY " + column + (query.isDesc() ? " DESC" : " ASC") + ", " + alias + ".id ASC";
-    }
-
-    private void setFilter(TypedQuery<?> typedQuery, PageQuery query) {
-        if (hasFilter(query)) {
-            typedQuery.setParameter("filter", query.getFilterValue().toLowerCase(Locale.ROOT));
+    private String orderBy(PageQuery page) {
+        String column = "e.id";
+        if (page.getSortBy() != null && !page.getSortBy().equals("id")) {
+            column = "LOWER(" + textColumn(page.getSortBy()) + ")";
         }
-    }
-
-    private boolean hasFilter(PageQuery query) {
-        return query.getFilterBy() != null && !query.getFilterBy().isEmpty()
-                && query.getFilterValue() != null && !query.getFilterValue().isEmpty();
-    }
-
-    private String lowerText(String column) {
-        return "LOWER(COALESCE(" + textColumn(column) + ", ''))";
+        String direction = " ASC";
+        if (page.isDesc()) {
+            direction = " DESC";
+        }
+        return " ORDER BY " + column + direction + ", e.id";
     }
 }

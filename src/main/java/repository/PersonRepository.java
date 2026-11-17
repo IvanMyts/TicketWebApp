@@ -8,21 +8,25 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 @ApplicationScoped
-public class PersonRepository extends BaseRepository<Person, Long> {
-    private static final String SELECT = "SELECT p FROM Person p LEFT JOIN FETCH p.location";
+public class PersonRepository extends BaseRepository<Person> {
+    private static final String SELECT = "SELECT e FROM Person e LEFT JOIN FETCH e.location";
 
     public PersonRepository() {
-        super(Person.class, "p", SELECT);
+        super("Person", SELECT);
     }
 
     @Override
     protected String textColumn(String column) {
-        return switch (column) {
-            case "eyeColor" -> "CAST(p.eyeColor AS string)";
-            case "hairColor" -> "CAST(p.hairColor AS string)";
-            case "nationality" -> "CAST(p.nationality AS string)";
-            default -> throw new InvalidRequestException("Недопустимая колонка: " + column);
-        };
+        switch (column) {
+            case "eyeColor":
+                return "CAST(e.eyeColor AS string)";
+            case "hairColor":
+                return "CAST(e.hairColor AS string)";
+            case "nationality":
+                return "CAST(e.nationality AS string)";
+            default:
+                throw new InvalidRequestException("Недопустимая колонка: " + column);
+        }
     }
 
     public List<Person> findByLocation(Location location) {
