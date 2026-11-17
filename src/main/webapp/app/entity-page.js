@@ -7,6 +7,7 @@ const FIRST_PAGE = { page: 0, size: 10, sortBy: 'id', desc: false, filterBy: '',
 export function EntityPage({ type, open, version }) {
     const cfg = ENTITIES[type];
     const textColumns = Object.entries(cfg.textColumns);
+    const sortColumns = textColumns.concat(Object.entries(cfg.sortColumns));
     const [query, setQuery] = useState(FIRST_PAGE);
     const [filter, setFilter] = useState({ by: textColumns[0][0], value: '' });
     const [data, setData] = useState(null);
@@ -55,7 +56,7 @@ export function EntityPage({ type, open, version }) {
                 Сортировка:
                 <select value=${query.sortBy} onChange=${(e) => update({ sortBy: e.target.value })}>
                     <option value="id">ID</option>
-                    ${textColumns.map(([key, title]) => html`<option key=${key} value=${key}>${title}</option>`)}
+                    ${sortColumns.map(([key, title]) => html`<option key=${key} value=${key}>${title}</option>`)}
                 </select>
                 <label><input type="checkbox" checked=${query.desc} onChange=${(e) => update({ desc: e.target.checked })} /> по убыванию</label>
             </span>

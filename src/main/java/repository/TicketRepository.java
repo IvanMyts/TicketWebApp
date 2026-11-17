@@ -4,6 +4,7 @@ import model.Ticket;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import java.util.Arrays;
 import java.util.List;
 
 @ApplicationScoped
@@ -13,7 +14,8 @@ public class TicketRepository extends BaseRepository<Ticket> {
             + " LEFT JOIN FETCH e.event LEFT JOIN FETCH e.venue";
 
     public TicketRepository() {
-        super(Ticket.class, SELECT, "name", "type");
+        super(Ticket.class, SELECT, Arrays.asList("name", "type"),
+                Arrays.asList("coordinates.x", "coordinates.y", "creationDate", "price", "discount", "number"));
     }
 
     public long countByNumberLessThan(double number) {

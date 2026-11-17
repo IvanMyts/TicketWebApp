@@ -8,7 +8,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class BaseRepository<T> {
@@ -19,11 +18,13 @@ public abstract class BaseRepository<T> {
     private final Class<T> type;
     private final String select;
     private final List<String> textColumns;
+    private final List<String> sortColumns;
 
-    protected BaseRepository(Class<T> type, String select, String... textColumns) {
+    protected BaseRepository(Class<T> type, String select, List<String> textColumns, List<String> sortColumns) {
         this.type = type;
         this.select = select;
-        this.textColumns = Arrays.asList(textColumns);
+        this.textColumns = textColumns;
+        this.sortColumns = sortColumns;
     }
 
     public T findById(Object id) {
@@ -75,15 +76,22 @@ public abstract class BaseRepository<T> {
     }
 
     private String orderBy(PageQuery page) {
-        String column = "e.id";
-        if (page.getSortBy() != null && !page.getSortBy().equals("id")) {
-            column = textColumn(page.getSortBy());
-        }
+        String column = sortColumn(page.getSortBy());
         String direction = " ASC";
         if (page.isDesc()) {
             direction = " DESC";
         }
         return " ORDER BY " + column + direction + ", e.id";
+    }
+
+    private String sortColumn(String column) {
+        if (column == null || column.equals("id")) {
+            return "e.id";
+        }
+        if (sortColumns.contains(column)) {
+            return "e." + column;
+        }
+        return textColumn(column);
     }
 
     private String textColumn(String column) {

@@ -14,6 +14,7 @@ export const ENTITIES = {
         one: 'билет',
         label: nameLabel,
         textColumns: { name: 'Название', type: 'Тип' },
+        sortColumns: { 'coordinates.x': 'Координата X', 'coordinates.y': 'Координата Y', creationDate: 'Дата создания', price: 'Цена', discount: 'Скидка', number: 'Номер' },
         columns: [
             ['ID', (t) => t.id],
             ['Название', (t) => t.name],
@@ -45,6 +46,7 @@ export const ENTITIES = {
         one: 'человек',
         label: (p) => `#${p.id}` + (p.nationality ? ` ${p.nationality}` : ''),
         textColumns: { eyeColor: 'Цвет глаз', hairColor: 'Цвет волос', nationality: 'Национальность' },
+        sortColumns: { height: 'Рост' },
         columns: [
             ['ID', (p) => p.id],
             ['Цвет глаз', (p) => p.eyeColor],
@@ -66,6 +68,7 @@ export const ENTITIES = {
         one: 'мероприятие',
         label: nameLabel,
         textColumns: { name: 'Название' },
+        sortColumns: { date: 'Дата', minAge: 'Мин. возраст' },
         columns: [
             ['ID', (e) => e.id],
             ['Название', (e) => e.name],
@@ -83,6 +86,7 @@ export const ENTITIES = {
         one: 'площадка',
         label: nameLabel,
         textColumns: { name: 'Название', type: 'Тип' },
+        sortColumns: { capacity: 'Вместимость' },
         columns: [
             ['ID', (v) => v.id],
             ['Название', (v) => v.name],
@@ -100,6 +104,7 @@ export const ENTITIES = {
         one: 'локация',
         label: nameLabel,
         textColumns: { name: 'Название' },
+        sortColumns: { x: 'X', y: 'Y', z: 'Z' },
         columns: [
             ['ID', (l) => l.id],
             ['X', (l) => l.x],
