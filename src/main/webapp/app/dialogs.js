@@ -23,9 +23,16 @@ export function ViewDialog({ type, id, open, onClose, version }) {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        api(`${type}/${id}`)
-            .then((result) => { setItem(result); setError(''); })
-            .catch((e) => { setItem(null); setError(e.message); });
+        async function load() {
+            try {
+                setItem(await api(`${type}/${id}`));
+                setError('');
+            } catch (e) {
+                setItem(null);
+                setError(e.message);
+            }
+        }
+        load();
     }, [type, id, version]);
 
     return html`
@@ -61,8 +68,15 @@ export function FormDialog({ type, id, open, onClose }) {
     const [error, setError] = useState('');
 
     useEffect(() => {
+        async function load() {
+            try {
+                setValues(toValues(cfg, await api(`${type}/${id}`)));
+            } catch (e) {
+                setError(e.message);
+            }
+        }
         if (editing) {
-            api(`${type}/${id}`).then((item) => setValues(toValues(cfg, item))).catch((e) => setError(e.message));
+            load();
         }
     }, []);
 
@@ -76,8 +90,8 @@ export function FormDialog({ type, id, open, onClose }) {
                 body: toRequest(cfg, values),
             });
             open('view', type, saved.id);
-        } catch (err) {
-            setError(err.message);
+        } catch (e) {
+            setError(e.message);
         }
     };
 
@@ -201,7 +215,14 @@ export function DeleteDialog({ type, id, onClose }) {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        api(`${type}/${id}`).then(setItem).catch((e) => setError(e.message));
+        async function load() {
+            try {
+                setItem(await api(`${type}/${id}`));
+            } catch (e) {
+                setError(e.message);
+            }
+        }
+        load();
     }, []);
 
     const remove = async () => {

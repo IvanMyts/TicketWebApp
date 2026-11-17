@@ -50,7 +50,11 @@ export function subscribeToChanges(onChange) {
         socket.onclose = async () => {
             if (stopped) return;
             reconnecting = true;
-            const me = await fetch('api/auth/me').catch(() => null);
+            let me = null;
+            try {
+                me = await fetch('api/auth/me');
+            } catch (e) {
+            }
             if (stopped) return;
             if (me && me.status === 401) {
                 onUnauthorized();

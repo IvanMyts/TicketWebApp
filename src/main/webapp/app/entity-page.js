@@ -14,13 +14,19 @@ export function EntityPage({ type, open, version }) {
     const [idToOpen, setIdToOpen] = useState('');
 
     useEffect(() => {
-        api(type, { query })
-            .then((result) => {
-                if (result.content.length === 0 && query.page > 0) setQuery({ ...query, page: query.page - 1 });
+        async function load() {
+            try {
+                const result = await api(type, { query });
+                if (result.content.length === 0 && query.page > 0) {
+                    setQuery({ ...query, page: query.page - 1 });
+                }
                 setData(result);
                 setError('');
-            })
-            .catch((e) => setError(e.message));
+            } catch (e) {
+                setError(e.message);
+            }
+        }
+        load();
     }, [type, query, version]);
 
     const update = (changes) => setQuery({ ...query, page: 0, ...changes });

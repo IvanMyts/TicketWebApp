@@ -1,11 +1,14 @@
 package repository;
 
 import dto.request.PageQuery;
+import exception.InvalidRequestException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.util.ArrayList;
+import javax.persistence.TypedQuery;
+
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class BaseRepository<T> {
@@ -13,26 +16,23 @@ public abstract class BaseRepository<T> {
     @PersistenceContext
     protected EntityManager em;
 
-    private final String entity;
+    private final Class<T> type;
     private final String select;
+    private final List<String> textColumns;
 
-    protected BaseRepository(String entity, String select) {
-        this.entity = entity;
+    protected BaseRepository(Class<T> type, String select, String... textColumns) {
+        this.type = type;
         this.select = select;
+        this.textColumns = Arrays.asList(textColumns);
     }
 
-    protected abstract String textColumn(String column);
-
-    protected abstract T cast(Object row);
-
     public T findById(Object id) {
-        Query query = em.createQuery("SELECT e FROM " + entity + " e WHERE e.id = :id");
-        query.setParameter("id", id);
-        List<?> found = query.getResultList();
-        if (found.isEmpty()) {
-            return null;
-        }
-        return cast(found.get(0));
+        return em.find(type, id);
+    }
+
+    public List<T> findReferencing(String relation, Object value) {
+        String jpql = "SELECT e FROM " + type.getSimpleName() + " e WHERE e." + relation + " = :value";
+        return em.createQuery(jpql, type).setParameter("value", value).getResultList();
     }
 
     public void save(T item) {
@@ -44,47 +44,52 @@ public abstract class BaseRepository<T> {
     }
 
     public List<T> findPage(PageQuery page) {
-        Query query = em.createQuery(select + where(page) + orderBy(page));
-        if (hasFilter(page)) {
-            query.setParameter("filter", page.getFilterValue().toLowerCase());
-        }
+        TypedQuery<T> query = em.createQuery(select + where(page) + orderBy(page), type);
+        setFilter(query, page);
         query.setFirstResult(page.getPage() * page.getSize());
         query.setMaxResults(page.getSize());
-        List<T> result = new ArrayList<>();
-        for (Object row : query.getResultList()) {
-            result.add(cast(row));
-        }
-        return result;
+        return query.getResultList();
     }
 
     public long count(PageQuery page) {
-        Query query = em.createQuery("SELECT COUNT(e) FROM " + entity + " e" + where(page));
-        if (hasFilter(page)) {
-            query.setParameter("filter", page.getFilterValue().toLowerCase());
-        }
-        return (Long) query.getSingleResult();
+        TypedQuery<Long> query = em.createQuery("SELECT COUNT(e) FROM " + type.getSimpleName() + " e" + where(page), Long.class);
+        setFilter(query, page);
+        return query.getSingleResult();
     }
 
     private boolean hasFilter(PageQuery page) {
         return page.getFilterBy() != null && page.getFilterValue() != null && !page.getFilterValue().isEmpty();
     }
 
+    private void setFilter(Query query, PageQuery page) {
+        if (hasFilter(page)) {
+            query.setParameter("filter", page.getFilterValue().toLowerCase());
+        }
+    }
+
     private String where(PageQuery page) {
         if (!hasFilter(page)) {
             return "";
         }
-        return " WHERE LOCATE(:filter, LOWER(" + textColumn(page.getFilterBy()) + ")) > 0";
+        return " WHERE LOCATE(:filter, " + textColumn(page.getFilterBy()) + ") > 0";
     }
 
     private String orderBy(PageQuery page) {
         String column = "e.id";
         if (page.getSortBy() != null && !page.getSortBy().equals("id")) {
-            column = "LOWER(" + textColumn(page.getSortBy()) + ")";
+            column = textColumn(page.getSortBy());
         }
         String direction = " ASC";
         if (page.isDesc()) {
             direction = " DESC";
         }
         return " ORDER BY " + column + direction + ", e.id";
+    }
+
+    private String textColumn(String column) {
+        if (!textColumns.contains(column)) {
+            throw new InvalidRequestException("Недопустимая колонка: " + column);
+        }
+        return "LOWER(CAST(e." + column + " AS string))";
     }
 }

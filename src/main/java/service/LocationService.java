@@ -1,8 +1,8 @@
 package service;
 
 import dto.request.LocationRequest;
-import dto.response.LocationResponse;
 import dto.request.PageQuery;
+import dto.response.LocationResponse;
 import dto.response.PageResponse;
 import exception.ConflictException;
 import exception.ObjectNotFoundException;
@@ -15,6 +15,7 @@ import repository.PersonRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class LocationService {
 
     public void delete(long id, Long replacementId) {
         Location location = findEntity(id);
-        List<Person> persons = personRepository.findByLocation(location);
+        List<Person> persons = personRepository.findReferencing("location", location);
         if (!persons.isEmpty()) {
             if (replacementId == null) {
                 throw new ConflictException("Локация используется (людей: " + persons.size() + "). Выберите замену.");

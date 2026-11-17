@@ -1,8 +1,9 @@
 package dto.request;
 
+import lombok.*;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import lombok.*;
 
 @Data
 @NoArgsConstructor

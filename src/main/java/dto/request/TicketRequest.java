@@ -1,10 +1,11 @@
 package dto.request;
 
 import dto.CoordinatesDto;
-import javax.validation.Valid;
-import javax.validation.constraints.*;
 import lombok.*;
 import model.TicketType;
+
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 
 @Data
 @NoArgsConstructor

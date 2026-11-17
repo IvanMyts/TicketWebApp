@@ -5,6 +5,7 @@ import model.User;
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
 import java.util.List;
 
 @ApplicationScoped
@@ -13,13 +14,12 @@ public class UserRepository {
     EntityManager em;
 
     public User findByLogin(String login) {
-        List<User> users = em.createQuery("SELECT u FROM User u WHERE u.login = :login", User.class)
-                .setParameter("login", login)
-                .getResultList();
-        if (users.isEmpty()) {
+        String jpql = "SELECT e FROM User e WHERE e.login = :login";
+        List<User> found = em.createQuery(jpql, User.class).setParameter("login", login).getResultList();
+        if (found.isEmpty()) {
             return null;
         }
-        return users.get(0);
+        return found.get(0);
     }
 
     public void save(User user) {

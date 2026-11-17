@@ -1,10 +1,11 @@
 package dto.request;
 
+import lombok.*;
+import model.VenueType;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
-import lombok.*;
-import model.VenueType;
 
 @Data
 @NoArgsConstructor

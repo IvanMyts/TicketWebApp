@@ -1,8 +1,8 @@
 package service;
 
 import dto.request.PageQuery;
-import dto.response.PageResponse;
 import dto.request.PersonRequest;
+import dto.response.PageResponse;
 import dto.response.PersonResponse;
 import exception.ConflictException;
 import exception.ObjectNotFoundException;
@@ -15,6 +15,7 @@ import repository.TicketRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class PersonService {
 
     public PersonResponse create(PersonRequest request) {
         Person person = PersonMapper.toEntity(request);
-        setLocation(person, request);
+        fillRelations(person, request);
         personRepository.save(person);
         return PersonMapper.toResponse(person);
     }
@@ -50,7 +51,7 @@ public class PersonService {
     public PersonResponse update(long id, PersonRequest request) {
         Person person = findEntity(id);
         PersonMapper.update(person, request);
-        setLocation(person, request);
+        fillRelations(person, request);
         return PersonMapper.toResponse(person);
     }
 
@@ -69,13 +70,6 @@ public class PersonService {
         personRepository.delete(person);
     }
 
-    private void setLocation(Person person, PersonRequest request) {
-        person.setLocation(null);
-        if (request.getLocationId() != null) {
-            person.setLocation(locationService.findEntity(request.getLocationId()));
-        }
-    }
-
     public Person findEntity(long id) {
         Person found = personRepository.findById(id);
         if (found == null) {
@@ -84,4 +78,10 @@ public class PersonService {
         return found;
     }
 
+    private void fillRelations(Person person, PersonRequest request) {
+        person.setLocation(null);
+        if (request.getLocationId() != null) {
+            person.setLocation(locationService.findEntity(request.getLocationId()));
+        }
+    }
 }

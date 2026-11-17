@@ -24,6 +24,9 @@ public class TicketMapper {
     }
 
     public static TicketResponse toResponse(Ticket entity) {
+        if (entity == null) {
+            return null;
+        }
         return new TicketResponse(
                 entity.getId(),
                 entity.getName(),

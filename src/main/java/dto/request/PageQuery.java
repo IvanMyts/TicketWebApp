@@ -1,13 +1,15 @@
 package dto.request;
 
+import lombok.*;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
-import lombok.*;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class PageQuery {
     @QueryParam("page")
     @DefaultValue("0")

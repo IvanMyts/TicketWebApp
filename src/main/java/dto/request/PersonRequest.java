@@ -1,9 +1,10 @@
 package dto.request;
 
-import javax.validation.constraints.Positive;
 import lombok.*;
 import model.Color;
 import model.Country;
+
+import javax.validation.constraints.Positive;
 
 @Data
 @NoArgsConstructor

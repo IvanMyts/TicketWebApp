@@ -1,9 +1,10 @@
 package model;
 
+import lombok.*;
+
 import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
-import lombok.*;
 
 import java.time.ZonedDateTime;
 

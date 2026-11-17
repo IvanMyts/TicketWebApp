@@ -14,7 +14,15 @@ function App() {
 
     useEffect(() => {
         setUnauthorizedHandler(() => setUser(null));
-        api('auth/me').then((me) => setUser(me.login)).catch(() => setUser(null));
+        async function load() {
+            try {
+                const me = await api('auth/me');
+                setUser(me.login);
+            } catch (e) {
+                setUser(null);
+            }
+        }
+        load();
     }, []);
 
     useEffect(() => {
@@ -28,7 +36,10 @@ function App() {
     const open = (kind, type, id) => setDialog({ kind, type, id });
     const close = () => setDialog(null);
     const logout = async () => {
-        await api('auth/logout', { method: 'POST' }).catch(() => {});
+        try {
+            await api('auth/logout', { method: 'POST' });
+        } catch (e) {
+        }
         setUser(null);
     };
 

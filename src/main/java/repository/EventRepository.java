@@ -1,6 +1,5 @@
 package repository;
 
-import exception.InvalidRequestException;
 import model.Event;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -9,21 +8,6 @@ import javax.enterprise.context.ApplicationScoped;
 public class EventRepository extends BaseRepository<Event> {
 
     public EventRepository() {
-        super("Event", "SELECT e FROM Event e");
-    }
-
-    @Override
-    protected Event cast(Object row) {
-        return (Event) row;
-    }
-
-    @Override
-    protected String textColumn(String column) {
-        switch (column) {
-            case "name":
-                return "e.name";
-            default:
-                throw new InvalidRequestException("Недопустимая колонка: " + column);
-        }
+        super(Event.class, "SELECT e FROM Event e", "name");
     }
 }

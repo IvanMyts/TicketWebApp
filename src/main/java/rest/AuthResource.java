@@ -24,41 +24,41 @@ public class AuthResource {
     @Inject
     AuthService authService;
     @Context
-    HttpServletRequest request;
+    HttpServletRequest httpRequest;
 
     @POST
     @Path("register")
-    public Response register(@NotNull(message = "Тело запроса обязательно") @Valid AuthRequest body) {
-        if (!authService.register(body)) {
+    public Response register(@NotNull(message = "Тело запроса обязательно") @Valid AuthRequest request) {
+        if (!authService.register(request)) {
             return Response.status(409).entity(new ErrorResponse("Этот логин уже занят")).build();
         }
-        return Response.status(201).entity(new AuthResponse(body.getLogin())).build();
+        return Response.status(201).entity(new AuthResponse(request.getLogin())).build();
     }
 
     @POST
     @Path("login")
-    public Response login(@NotNull(message = "Тело запроса обязательно") @Valid AuthRequest body) {
-        if (!authService.authenticate(body)) {
+    public Response login(@NotNull(message = "Тело запроса обязательно") @Valid AuthRequest request) {
+        if (!authService.authenticate(request)) {
             return Response.status(401).entity(new ErrorResponse("Неверный логин или пароль")).build();
         }
-        HttpSession old = request.getSession(false);
+        HttpSession old = httpRequest.getSession(false);
         if (old != null) {
             old.invalidate();
         }
-        request.getSession(true).setAttribute("login", body.getLogin());
-        return Response.status(200).entity(new AuthResponse(body.getLogin())).build();
+        httpRequest.getSession(true).setAttribute("login", request.getLogin());
+        return Response.status(200).entity(new AuthResponse(request.getLogin())).build();
     }
 
     @GET
     @Path("me")
     public Response me() {
-        return Response.status(200).entity(new AuthResponse((String) request.getSession().getAttribute("login"))).build();
+        return Response.status(200).entity(new AuthResponse((String) httpRequest.getSession().getAttribute("login"))).build();
     }
 
     @POST
     @Path("logout")
     public Response logout() {
-        HttpSession session = request.getSession(false);
+        HttpSession session = httpRequest.getSession(false);
         if (session != null) {
             session.invalidate();
         }
