@@ -13,6 +13,11 @@ public class EventRepository extends BaseRepository<Event> {
     }
 
     @Override
+    protected Event cast(Object row) {
+        return (Event) row;
+    }
+
+    @Override
     protected String textColumn(String column) {
         switch (column) {
             case "name":

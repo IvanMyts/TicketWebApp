@@ -16,6 +16,11 @@ public class PersonRepository extends BaseRepository<Person> {
     }
 
     @Override
+    protected Person cast(Object row) {
+        return (Person) row;
+    }
+
+    @Override
     protected String textColumn(String column) {
         switch (column) {
             case "eyeColor":

@@ -13,6 +13,11 @@ public class LocationRepository extends BaseRepository<Location> {
     }
 
     @Override
+    protected Location cast(Object row) {
+        return (Location) row;
+    }
+
+    @Override
     protected String textColumn(String column) {
         switch (column) {
             case "name":

@@ -5,6 +5,7 @@ import dto.request.PageQuery;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BaseRepository<T> {
@@ -22,14 +23,16 @@ public abstract class BaseRepository<T> {
 
     protected abstract String textColumn(String column);
 
+    protected abstract T cast(Object row);
+
     public T findById(Object id) {
         Query query = em.createQuery("SELECT e FROM " + entity + " e WHERE e.id = :id");
         query.setParameter("id", id);
-        List<T> found = query.getResultList();
+        List<?> found = query.getResultList();
         if (found.isEmpty()) {
             return null;
         }
-        return found.get(0);
+        return cast(found.get(0));
     }
 
     public void save(T item) {
@@ -47,7 +50,11 @@ public abstract class BaseRepository<T> {
         }
         query.setFirstResult(page.getPage() * page.getSize());
         query.setMaxResults(page.getSize());
-        return query.getResultList();
+        List<T> result = new ArrayList<>();
+        for (Object row : query.getResultList()) {
+            result.add(cast(row));
+        }
+        return result;
     }
 
     public long count(PageQuery page) {

@@ -13,6 +13,11 @@ public class VenueRepository extends BaseRepository<Venue> {
     }
 
     @Override
+    protected Venue cast(Object row) {
+        return (Venue) row;
+    }
+
+    @Override
     protected String textColumn(String column) {
         switch (column) {
             case "name":

@@ -17,6 +17,11 @@ public class TicketRepository extends BaseRepository<Ticket> {
     }
 
     @Override
+    protected Ticket cast(Object row) {
+        return (Ticket) row;
+    }
+
+    @Override
     protected String textColumn(String column) {
         switch (column) {
             case "name":
