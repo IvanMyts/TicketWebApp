@@ -7,11 +7,6 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.util.stream.Collectors;
 
-/**
- * Ошибки валидации → 400 с текстом всех нарушений.
- * Отдельный класс нужен потому, что у RESTEasy есть свой обработчик ошибок валидации,
- * и ErrorMapper (для Exception) ему проигрывает: выбирается обработчик для более конкретного типа.
- */
 @Provider
 public class ValidationErrorMapper implements ExceptionMapper<ConstraintViolationException> {
 

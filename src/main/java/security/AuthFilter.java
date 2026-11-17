@@ -9,10 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-/**
- * Пускает к REST и WebSocket только вошедших пользователей. Вход и регистрация открыты.
- * Рукопожатие WebSocket — обычный HTTP-запрос, поэтому без сессии соединение не откроется.
- */
 @WebFilter({"/api/*", "/ws/*"})
 public class AuthFilter extends HttpFilter {
 

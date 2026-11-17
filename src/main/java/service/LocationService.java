@@ -1,7 +1,5 @@
 package service;
 
-import dto.response.EntityChangeEvent;
-import dto.response.EntityChangeEvent.EntityType;
 import dto.request.LocationRequest;
 import dto.response.LocationResponse;
 import dto.request.PageQuery;
@@ -26,37 +24,30 @@ public class LocationService {
     LocationRepository locationRepository;
     @Inject
     PersonRepository personRepository;
-    @Inject
-    LocationMapper mapper;
-    @Inject
-    javax.enterprise.event.Event<EntityChangeEvent> changes;
 
     public PageResponse<LocationResponse> list(PageQuery query) {
         List<LocationResponse> content = locationRepository.findPage(query).stream()
-                .map(mapper::toResponse)
+                .map(LocationMapper::toResponse)
                 .toList();
         return PageResponse.of(content, query.getSize(), locationRepository.count(query));
     }
 
     public LocationResponse get(long id) {
-        return mapper.toResponse(findEntity(id));
+        return LocationMapper.toResponse(findEntity(id));
     }
 
     public LocationResponse create(LocationRequest request) {
-        Location location = mapper.toEntity(request);
+        Location location = LocationMapper.toEntity(request);
         locationRepository.save(location);
-        changed(location.getId());
-        return mapper.toResponse(location);
+        return LocationMapper.toResponse(location);
     }
 
     public LocationResponse update(long id, LocationRequest request) {
         Location location = findEntity(id);
-        mapper.update(location, request);
-        changed(id);
-        return mapper.toResponse(location);
+        LocationMapper.update(location, request);
+        return LocationMapper.toResponse(location);
     }
 
-    /** Люди с этой локацией перепривязываются к replacementId, затем локация удаляется. */
     public void delete(long id, Long replacementId) {
         Location location = findEntity(id);
         List<Person> persons = personRepository.findByLocation(location);
@@ -68,15 +59,10 @@ public class LocationService {
             persons.forEach(person -> person.setLocation(replacement));
         }
         locationRepository.delete(location);
-        changed(id);
     }
 
     public Location findEntity(long id) {
         return locationRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Локация с id " + id + " не найдена"));
-    }
-
-    private void changed(long id) {
-        changes.fire(new EntityChangeEvent(EntityType.LOCATION, id));
     }
 }

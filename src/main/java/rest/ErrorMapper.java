@@ -15,10 +15,6 @@ import javax.ws.rs.ext.Provider;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Превращает любое исключение в ответ с ErrorResponse.
- * Причина ищется по цепочке, потому что ошибки при коммите транзакции приходят обёрнутыми.
- */
 @Provider
 public class ErrorMapper implements ExceptionMapper<Exception> {
     private static final Logger LOG = Logger.getLogger(ErrorMapper.class.getName());

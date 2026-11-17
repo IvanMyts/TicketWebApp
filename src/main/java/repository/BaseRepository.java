@@ -9,13 +9,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-/**
- * Общий код репозиториев: CRUD и постраничный список с сортировкой и фильтром.
- * Наследник задаёт запрос выборки (с нужными JOIN FETCH) и строковые колонки.
- *
- * @param <T>  тип сущности
- * @param <ID> тип идентификатора
- */
 public abstract class BaseRepository<T, ID> {
 
     @PersistenceContext
@@ -25,21 +18,12 @@ public abstract class BaseRepository<T, ID> {
     private final String alias;
     private final String select;
 
-    /**
-     * @param type   класс сущности
-     * @param alias  псевдоним сущности в запросах, например "t"
-     * @param select запрос выборки для страницы, например "SELECT t FROM Ticket t LEFT JOIN FETCH ..."
-     */
     protected BaseRepository(Class<T> type, String alias, String select) {
         this.type = type;
         this.alias = alias;
         this.select = select;
     }
 
-    /**
-     * JPQL-выражение строковой колонки по её имени из API.
-     * Для недопустимого имени бросает InvalidRequestException.
-     */
     protected abstract String textColumn(String column);
 
     public List<T> findPage(PageQuery query) {

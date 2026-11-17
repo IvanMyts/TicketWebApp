@@ -1,11 +1,9 @@
 let onUnauthorized = () => {};
 
-/** Что делать, если сессия закончилась (сервер ответил 401). */
 export function setUnauthorizedHandler(handler) {
     onUnauthorized = handler;
 }
 
-/** Запрос к REST. При ошибке бросает Error с текстом из ErrorResponse. */
 export async function api(path, { method = 'GET', body, query } = {}) {
     let url = 'api/' + path;
     if (query) {
@@ -28,7 +26,6 @@ export async function api(path, { method = 'GET', body, query } = {}) {
         try {
             message = (await response.json()).message || message;
         } catch {
-            // тело не JSON — оставляем код ответа
         }
         throw new Error(message);
     }
@@ -36,7 +33,6 @@ export async function api(path, { method = 'GET', body, query } = {}) {
     return text ? JSON.parse(text) : null;
 }
 
-/** Подписка на изменения по WebSocket. Возвращает функцию отписки. */
 export function subscribeToChanges(onChange) {
     let socket;
     let stopped = false;
@@ -47,7 +43,7 @@ export function subscribeToChanges(onChange) {
         socket = new WebSocket(url);
         socket.onmessage = (event) => onChange(JSON.parse(event.data));
         socket.onclose = () => {
-            if (!stopped) setTimeout(connect, 2000); // переподключение
+            if (!stopped) setTimeout(connect, 2000);
         };
     };
     connect();

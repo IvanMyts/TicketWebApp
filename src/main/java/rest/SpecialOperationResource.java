@@ -22,7 +22,6 @@ public class SpecialOperationResource {
     @Inject
     SpecialOperationService service;
 
-    /** GET /api/operations/count-number-less-than?number=10 */
     @GET
     @Path("count-number-less-than")
     public CountResponse countByNumberLessThan(
@@ -30,7 +29,6 @@ public class SpecialOperationResource {
         return service.countByNumberLessThan(number);
     }
 
-    /** GET /api/operations/name-starts-with?prefix=abc */
     @GET
     @Path("name-starts-with")
     public List<TicketResponse> findByNamePrefix(
@@ -38,14 +36,12 @@ public class SpecialOperationResource {
         return service.findByNamePrefix(prefix);
     }
 
-    /** GET /api/operations/distinct-numbers */
     @GET
     @Path("distinct-numbers")
     public List<Double> distinctNumbers() {
         return service.distinctNumbers();
     }
 
-    /** POST /api/operations/tickets/5/sell  {"personId": 1, "price": 100} */
     @POST
     @Path("tickets/{id}/sell")
     public TicketResponse sell(@PathParam("id") long id,
@@ -53,7 +49,6 @@ public class SpecialOperationResource {
         return service.sell(id, request);
     }
 
-    /** POST /api/operations/tickets/5/copy-vip */
     @POST
     @Path("tickets/{id}/copy-vip")
     public Response copyAsVip(@PathParam("id") long id) {

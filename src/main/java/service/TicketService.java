@@ -1,7 +1,5 @@
 package service;
 
-import dto.response.EntityChangeEvent;
-import dto.response.EntityChangeEvent.EntityType;
 import dto.request.PageQuery;
 import dto.response.PageResponse;
 import dto.request.TicketRequest;
@@ -27,41 +25,34 @@ public class TicketService {
     EventService eventService;
     @Inject
     VenueService venueService;
-    @Inject
-    TicketMapper mapper;
-    @Inject
-    javax.enterprise.event.Event<EntityChangeEvent> changes;
 
     public PageResponse<TicketResponse> list(PageQuery query) {
         List<TicketResponse> content = ticketRepository.findPage(query).stream()
-                .map(mapper::toResponse)
+                .map(TicketMapper::toResponse)
                 .toList();
         return PageResponse.of(content, query.getSize(), ticketRepository.count(query));
     }
 
     public TicketResponse get(long id) {
-        return mapper.toResponse(findEntity(id));
+        return TicketMapper.toResponse(findEntity(id));
     }
 
     public TicketResponse create(TicketRequest request) {
-        Ticket ticket = mapper.toEntity(request);
+        Ticket ticket = TicketMapper.toEntity(request);
         fillRelations(ticket, request);
         ticketRepository.save(ticket);
-        changed(ticket.getId());
-        return mapper.toResponse(ticket);
+        return TicketMapper.toResponse(ticket);
     }
 
     public TicketResponse update(long id, TicketRequest request) {
         Ticket ticket = findEntity(id);
-        mapper.update(ticket, request);
+        TicketMapper.update(ticket, request);
         fillRelations(ticket, request);
-        changed(id);
-        return mapper.toResponse(ticket);
+        return TicketMapper.toResponse(ticket);
     }
 
     public void delete(long id) {
         ticketRepository.delete(findEntity(id));
-        changed(id);
     }
 
     public Ticket findEntity(long id) {
@@ -72,10 +63,5 @@ public class TicketService {
         ticket.setPerson(request.getPersonId() == null ? null : personService.findEntity(request.getPersonId()));
         ticket.setEvent(request.getEventId() == null ? null : eventService.findEntity(request.getEventId()));
         ticket.setVenue(request.getVenueId() == null ? null : venueService.findEntity(request.getVenueId()));
-    }
-
-
-    private void changed(long id) {
-        changes.fire(new EntityChangeEvent(EntityType.TICKET, id));
     }
 }

@@ -7,10 +7,10 @@ import { FormDialog, ViewDialog, DeleteDialog } from './dialogs.js';
 import { Operations } from './operations.js';
 
 function App() {
-    const [user, setUser] = useState(undefined); // undefined — ещё проверяем сессию
+    const [user, setUser] = useState(undefined);
     const [page, setPage] = useState('tickets');
-    const [dialog, setDialog] = useState(null); // { kind, type, id }
-    const [version, setVersion] = useState(0);   // растёт при каждом сообщении WebSocket
+    const [dialog, setDialog] = useState(null);
+    const [version, setVersion] = useState(0);
 
     useEffect(() => {
         setUnauthorizedHandler(() => setUser(null));

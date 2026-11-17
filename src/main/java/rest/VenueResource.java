@@ -45,7 +45,6 @@ public class VenueResource {
         return service.update(id, request);
     }
 
-    /** replacementId — объект, к которому перепривязываются ссылки на удаляемый. */
     @DELETE
     @Path("{id}")
     public void delete(@PathParam("id") int id, @QueryParam("replacementId") Integer replacementId) {

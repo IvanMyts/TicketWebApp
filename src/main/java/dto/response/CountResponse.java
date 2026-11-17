@@ -2,7 +2,6 @@ package dto.response;
 
 import lombok.*;
 
-/** Ответ на «количество объектов, у которых number меньше заданного». */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

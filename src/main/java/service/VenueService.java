@@ -1,7 +1,5 @@
 package service;
 
-import dto.response.EntityChangeEvent;
-import dto.response.EntityChangeEvent.EntityType;
 import dto.request.VenueRequest;
 import dto.response.VenueResponse;
 import dto.request.PageQuery;
@@ -26,40 +24,33 @@ public class VenueService {
     VenueRepository repository;
     @Inject
     TicketRepository ticketRepository;
-    @Inject
-    VenueMapper mapper;
-    @Inject
-    javax.enterprise.event.Event<EntityChangeEvent> changes;
 
     public PageResponse<VenueResponse> list(PageQuery query) {
         List<VenueResponse> content = repository.findPage(query).stream()
-                .map(mapper::toResponse)
+                .map(VenueMapper::toResponse)
                 .toList();
         return PageResponse.of(content, query.getSize(), repository.count(query));
     }
 
     public VenueResponse get(int id) {
-        return mapper.toResponse(findEntity(id));
+        return VenueMapper.toResponse(findEntity(id));
     }
 
     public VenueResponse create(VenueRequest request) {
-        Venue entity = mapper.toEntity(request);
+        Venue entity = VenueMapper.toEntity(request);
         repository.save(entity);
-        changed(entity.getId());
-        return mapper.toResponse(entity);
+        return VenueMapper.toResponse(entity);
     }
 
     public VenueResponse update(int id, VenueRequest request) {
         Venue entity = findEntity(id);
-        mapper.update(entity, request);
-        changed(id);
-        return mapper.toResponse(entity);
+        VenueMapper.update(entity, request);
+        return VenueMapper.toResponse(entity);
     }
 
-    /** Билеты с этим объектом перепривязываются к replacementId, затем объект удаляется. */
     public void delete(int id, Integer replacementId) {
         Venue entity = findEntity(id);
-        List<Ticket> tickets = ticketRepository.findByVenue(entity);
+        List<Ticket> tickets = ticketRepository.findReferencing("venue", entity);
         if (!tickets.isEmpty()) {
             if (replacementId == null) {
                 throw new ConflictException("Площадка используется (билетов: " + tickets.size() + "). Выберите замену.");
@@ -68,15 +59,10 @@ public class VenueService {
             tickets.forEach(ticket -> ticket.setVenue(replacement));
         }
         repository.delete(entity);
-        changed(id);
     }
 
     public Venue findEntity(int id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Площадка с id " + id + " не найдена"));
-    }
-
-    private void changed(long id) {
-        changes.fire(new EntityChangeEvent(EntityType.VENUE, id));
     }
 }

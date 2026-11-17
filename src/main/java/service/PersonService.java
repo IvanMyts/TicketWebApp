@@ -1,7 +1,5 @@
 package service;
 
-import dto.response.EntityChangeEvent;
-import dto.response.EntityChangeEvent.EntityType;
 import dto.request.PageQuery;
 import dto.response.PageResponse;
 import dto.request.PersonRequest;
@@ -28,42 +26,35 @@ public class PersonService {
     TicketRepository ticketRepository;
     @Inject
     LocationService locationService;
-    @Inject
-    PersonMapper mapper;
-    @Inject
-    javax.enterprise.event.Event<EntityChangeEvent> changes;
 
     public PageResponse<PersonResponse> list(PageQuery query) {
         List<PersonResponse> content = personRepository.findPage(query).stream()
-                .map(mapper::toResponse)
+                .map(PersonMapper::toResponse)
                 .toList();
         return PageResponse.of(content, query.getSize(), personRepository.count(query));
     }
 
     public PersonResponse get(long id) {
-        return mapper.toResponse(findEntity(id));
+        return PersonMapper.toResponse(findEntity(id));
     }
 
     public PersonResponse create(PersonRequest request) {
-        Person person = mapper.toEntity(request);
+        Person person = PersonMapper.toEntity(request);
         person.setLocation(request.getLocationId() == null ? null : locationService.findEntity(request.getLocationId()));
         personRepository.save(person);
-        changed(person.getId());
-        return mapper.toResponse(person);
+        return PersonMapper.toResponse(person);
     }
 
     public PersonResponse update(long id, PersonRequest request) {
         Person person = findEntity(id);
-        mapper.update(person, request);
+        PersonMapper.update(person, request);
         person.setLocation(request.getLocationId() == null ? null : locationService.findEntity(request.getLocationId()));
-        changed(id);
-        return mapper.toResponse(person);
+        return PersonMapper.toResponse(person);
     }
 
-    /** Билеты этого человека перепривязываются к replacementId, затем человек удаляется. */
     public void delete(long id, Long replacementId) {
         Person person = findEntity(id);
-        List<Ticket> tickets = ticketRepository.findByPerson(person);
+        List<Ticket> tickets = ticketRepository.findReferencing("person", person);
         if (!tickets.isEmpty()) {
             if (replacementId == null) {
                 throw new ConflictException("Человек используется (билетов: " + tickets.size() + "). Выберите замену.");
@@ -72,15 +63,10 @@ public class PersonService {
             tickets.forEach(ticket -> ticket.setPerson(replacement));
         }
         personRepository.delete(person);
-        changed(id);
     }
 
     public Person findEntity(long id) {
         return personRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Человек с id " + id + " не найден"));
     }
 
-
-    private void changed(long id) {
-        changes.fire(new EntityChangeEvent(EntityType.PERSON, id));
-    }
 }

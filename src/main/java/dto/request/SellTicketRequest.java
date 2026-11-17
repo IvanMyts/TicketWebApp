@@ -4,7 +4,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import lombok.*;
 
-/** «Продать билет за указанную сумму указанному человеку». ID билета передаётся в пути. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

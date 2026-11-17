@@ -15,7 +15,6 @@ public class PersonRepository extends BaseRepository<Person, Long> {
         super(Person.class, "p", SELECT);
     }
 
-    /** Строковых колонок у Person нет, поэтому используются enum как строки. */
     @Override
     protected String textColumn(String column) {
         return switch (column) {

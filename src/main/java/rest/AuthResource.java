@@ -15,7 +15,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-/** Вход по сессии: после login браузер получает cookie JSESSIONID и шлёт её с каждым запросом. */
 @Path("auth")
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
@@ -26,7 +25,6 @@ public class AuthResource {
     @Context
     HttpServletRequest request;
 
-    /** 201 — пользователь создан, 409 — логин занят. Входить после регистрации нужно отдельно. */
     @POST
     @Path("register")
     public Response register(@NotNull(message = "Тело запроса обязательно") @Valid AuthRequest body) {
@@ -36,14 +34,12 @@ public class AuthResource {
         return Response.status(Response.Status.CREATED).entity(new AuthResponse(body.getLogin())).build();
     }
 
-    /** 200 — вход выполнен, 401 — неверный логин или пароль. */
     @POST
     @Path("login")
     public Response login(@NotNull(message = "Тело запроса обязательно") @Valid AuthRequest body) {
         if (!authService.authenticate(body)) {
             return ErrorMapper.response(401, "Неверный логин или пароль");
         }
-        // Новая сессия при входе, чтобы старый идентификатор сессии нельзя было использовать.
         HttpSession old = request.getSession(false);
         if (old != null) {
             old.invalidate();
@@ -52,7 +48,6 @@ public class AuthResource {
         return Response.ok(new AuthResponse(body.getLogin())).build();
     }
 
-    /** Текущий пользователь. Без входа AuthFilter вернёт 401 — так клиент узнаёт, что нужно войти. */
     @GET
     @Path("me")
     public AuthResponse me() {

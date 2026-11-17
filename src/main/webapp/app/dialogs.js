@@ -12,7 +12,6 @@ export function Modal({ title, onClose, children }) {
         </div>`;
 }
 
-/** Список существующих объектов для выбора связи (первые 100). */
 export function RefSelect({ type, value, onChange, exclude, required }) {
     const [items, setItems] = useState([]);
     useEffect(() => {
@@ -27,9 +26,6 @@ export function RefSelect({ type, value, onChange, exclude, required }) {
         </select>`;
 }
 
-// ---------- Просмотр ----------
-
-/** Окно просмотра: все поля объекта и полная информация о связанных объектах. */
 export function ViewDialog({ type, id, open, onClose, version }) {
     const cfg = ENTITIES[type];
     const [item, setItem] = useState(null);
@@ -67,9 +63,6 @@ function Details({ data }) {
         </tbody></table>`;
 }
 
-// ---------- Создание и изменение ----------
-
-/** Окно создания (id не задан) или изменения объекта. */
 export function FormDialog({ type, id, open, onClose }) {
     const cfg = ENTITIES[type];
     const editing = id !== undefined;
@@ -117,7 +110,6 @@ export function FormDialog({ type, id, open, onClose }) {
         <//>`;
 }
 
-/** Поле формы. Атрибуты required/min/max/maxLength не дают ввести недопустимое значение. */
 function Input({ field, value, onChange }) {
     const change = (e) => onChange(e.target.value);
     if (field.ref) {
@@ -144,7 +136,6 @@ function emptyValues(cfg) {
     return Object.fromEntries(cfg.fields.map((field) => [field.name, '']));
 }
 
-/** Ответ сервера → значения полей формы (строки). */
 function toValues(cfg, item) {
     return Object.fromEntries(cfg.fields.map((field) => {
         let value = field.ref ? item[field.from]?.id : field.name.split('.').reduce((obj, key) => obj?.[key], item);
@@ -154,7 +145,6 @@ function toValues(cfg, item) {
     }));
 }
 
-/** Значения формы → тело запроса. "coordinates.x" превращается во вложенный объект. */
 function toRequest(cfg, values) {
     const request = {};
     for (const field of cfg.fields) {
@@ -169,15 +159,11 @@ function toRequest(cfg, values) {
     return request;
 }
 
-/** Проверка «больше 0», которую нельзя задать атрибутом min. */
 function validate(cfg, values) {
     const field = cfg.fields.find((f) => f.positive && values[f.name] !== '' && Number(values[f.name]) <= 0);
     return field ? `Поле «${field.label}» должно быть больше 0` : '';
 }
 
-// ---------- Удаление ----------
-
-/** Окно удаления. Для вспомогательных объектов можно выбрать замену, к которой перейдут ссылки. */
 export function DeleteDialog({ type, id, onClose }) {
     const cfg = ENTITIES[type];
     const [item, setItem] = useState(null);

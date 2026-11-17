@@ -12,7 +12,6 @@ public class PersonRequest {
     private Color eyeColor;
     private Color hairColor;
 
-    /** ID существующей локации (null — локации нет). */
     private Long locationId;
 
     @Positive(message = "Рост должен быть больше 0")

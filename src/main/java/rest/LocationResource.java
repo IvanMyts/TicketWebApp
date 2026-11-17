@@ -45,7 +45,6 @@ public class LocationResource {
         return service.update(id, request);
     }
 
-    /** replacementId — объект, к которому перепривязываются ссылки на удаляемый. */
     @DELETE
     @Path("{id}")
     public void delete(@PathParam("id") long id, @QueryParam("replacementId") Long replacementId) {

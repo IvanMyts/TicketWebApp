@@ -4,7 +4,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import lombok.*;
 
-/** Логин и пароль для входа и регистрации. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

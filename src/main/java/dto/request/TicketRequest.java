@@ -6,11 +6,6 @@ import javax.validation.constraints.*;
 import lombok.*;
 import model.TicketType;
 
-/**
- * Тело запроса на создание/обновление билета.
- * id и creationDate не передаются — их генерирует БД/сервер.
- * Связи задаются id уже существующих объектов (null — связи нет).
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -2,7 +2,6 @@ import { html, useState } from './lib.js';
 import { api } from './api.js';
 import { RefSelect } from './dialogs.js';
 
-/** Отдельный интерфейс для специальных операций над билетами. */
 export function Operations({ open }) {
     return html`
         <h1>Специальные операции</h1>
@@ -13,7 +12,6 @@ export function Operations({ open }) {
         <${CopyAsVip} open=${open} />`;
 }
 
-/** Блок операции: форма, результат и ошибка. run() выполняет запрос и показывает результат. */
 function useOperation() {
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');

@@ -1,5 +1,7 @@
 package model;
 
+import websocket.ChangeListener;
+
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import lombok.*;
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Entity
+@EntityListeners(ChangeListener.class)
 @Table(name = "event")
 public class Event {
     @Id

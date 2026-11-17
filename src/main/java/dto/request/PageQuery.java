@@ -6,12 +6,6 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
 import lombok.*;
 
-/**
- * Параметры любой таблицы со списком объектов (Ticket, Person, Event, Venue, Location):
- * пагинация, сортировка и фильтр по неполному совпадению строковой колонки.
- * Используется через {@code @BeanParam}.
- * Допустимые значения sortBy/filterBy у каждой сущности свои и проверяются в её репозитории.
- */
 @Data
 @NoArgsConstructor
 public class PageQuery {

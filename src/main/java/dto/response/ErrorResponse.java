@@ -2,7 +2,6 @@ package dto.response;
 
 import lombok.*;
 
-/** Ошибка для клиента: текст, который можно показать пользователю. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

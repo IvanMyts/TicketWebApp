@@ -1,10 +1,7 @@
 package repository;
 
 import exception.InvalidRequestException;
-import model.Event;
-import model.Person;
 import model.Ticket;
-import model.Venue;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
@@ -28,27 +25,12 @@ public class TicketRepository extends BaseRepository<Ticket, Long> {
         };
     }
 
-    public List<Ticket> findByPerson(Person person) {
-        return em.createQuery("SELECT t FROM Ticket t WHERE t.person = :person", Ticket.class)
-                .setParameter("person", person)
+    public List<Ticket> findReferencing(String relation, Object entity) {
+        return em.createQuery("SELECT t FROM Ticket t WHERE t." + relation + " = :entity", Ticket.class)
+                .setParameter("entity", entity)
                 .getResultList();
     }
 
-    public List<Ticket> findByEvent(Event event) {
-        return em.createQuery("SELECT t FROM Ticket t WHERE t.event = :event", Ticket.class)
-                .setParameter("event", event)
-                .getResultList();
-    }
-
-    public List<Ticket> findByVenue(Venue venue) {
-        return em.createQuery("SELECT t FROM Ticket t WHERE t.venue = :venue", Ticket.class)
-                .setParameter("venue", venue)
-                .getResultList();
-    }
-
-    // ---------- Специальные операции ----------
-
-    /** Билеты с number = null не учитываются. */
     public long countByNumberLessThan(double number) {
         return em.createQuery("SELECT COUNT(t) FROM Ticket t WHERE t.number < :number", Long.class)
                 .setParameter("number", number)
@@ -61,7 +43,6 @@ public class TicketRepository extends BaseRepository<Ticket, Long> {
                 .getResultList();
     }
 
-    /** null значением не считается и не возвращается. */
     public List<Double> findDistinctNumbers() {
         return em.createQuery("SELECT DISTINCT t.number FROM Ticket t WHERE t.number IS NOT NULL ORDER BY t.number",
                         Double.class)

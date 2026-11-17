@@ -4,7 +4,6 @@ import lombok.*;
 
 import java.util.List;
 
-/** Страница таблицы: строки и данные для переключателя страниц. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -4,25 +4,21 @@ import dto.request.VenueRequest;
 import dto.response.VenueResponse;
 import model.Venue;
 
-import javax.enterprise.context.ApplicationScoped;
-
-@ApplicationScoped
 public class VenueMapper {
 
-    public Venue toEntity(VenueRequest request) {
+    public static Venue toEntity(VenueRequest request) {
         Venue venue = new Venue();
         update(venue, request);
         return venue;
     }
 
-    /** Полная замена полей (семантика PUT). id не трогается. */
-    public void update(Venue target, VenueRequest request) {
+    public static void update(Venue target, VenueRequest request) {
         target.setName(request.getName());
         target.setCapacity(request.getCapacity());
         target.setType(request.getType());
     }
 
-    public VenueResponse toResponse(Venue entity) {
+    public static VenueResponse toResponse(Venue entity) {
         if (entity == null) {
             return null;
         }

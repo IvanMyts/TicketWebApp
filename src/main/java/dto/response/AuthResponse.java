@@ -2,7 +2,6 @@ package dto.response;
 
 import lombok.*;
 
-/** Текущий пользователь. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

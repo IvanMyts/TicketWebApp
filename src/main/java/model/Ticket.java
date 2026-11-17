@@ -1,5 +1,7 @@
 package model;
 
+import websocket.ChangeListener;
+
 import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
@@ -11,6 +13,7 @@ import java.time.ZonedDateTime;
 @Setter
 @NoArgsConstructor
 @Entity
+@EntityListeners(ChangeListener.class)
 @Table(name = "ticket")
 public class Ticket {
     @Id

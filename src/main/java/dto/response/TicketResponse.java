@@ -6,7 +6,6 @@ import model.TicketType;
 
 import java.time.ZonedDateTime;
 
-/** Билет вместе со связанными объектами (для таблицы и окна просмотра). */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

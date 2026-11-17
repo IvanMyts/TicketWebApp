@@ -4,7 +4,6 @@ import { ENTITIES } from './entities.js';
 
 const FIRST_PAGE = { page: 0, size: 10, sortBy: 'id', desc: false, filterBy: '', filterValue: '' };
 
-/** Главное окно сущности: таблица с пагинацией, фильтром и сортировкой. */
 export function EntityPage({ type, open, version }) {
     const cfg = ENTITIES[type];
     const textColumns = Object.entries(cfg.textColumns);
@@ -17,7 +16,6 @@ export function EntityPage({ type, open, version }) {
     useEffect(() => {
         api(type, { query })
             .then((result) => {
-                // После удаления последней записи на странице переходим на предыдущую.
                 if (result.content.length === 0 && query.page > 0) setQuery({ ...query, page: query.page - 1 });
                 setData(result);
                 setError('');
@@ -87,7 +85,6 @@ export function EntityPage({ type, open, version }) {
     `;
 }
 
-/** Ячейка: дата, ссылка на связанный объект или просто значение. */
 function cell(value, kind, open) {
     if (value === null || value === undefined) return '—';
     if (kind === 'date') return formatDate(value);
