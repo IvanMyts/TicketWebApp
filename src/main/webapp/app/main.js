@@ -32,7 +32,11 @@ function App() {
         setUser(null);
     };
 
-    const menu = [...Object.entries(ENTITIES).map(([key, cfg]) => [key, cfg.title]), ['operations', 'Специальные операции']];
+    const menu = [];
+    for (const key of Object.keys(ENTITIES)) {
+        menu.push([key, ENTITIES[key].title]);
+    }
+    menu.push(['operations', 'Специальные операции']);
 
     return html`
         <nav class="menu">
@@ -47,10 +51,10 @@ function App() {
                 ? html`<${Operations} open=${open} version=${version} />`
                 : html`<${EntityPage} key=${page} type=${page} open=${open} version=${version} />`}
         </main>
-        ${dialog?.kind === 'view' && html`<${ViewDialog} ...${dialog} open=${open} onClose=${close} version=${version} />`}
-        ${dialog?.kind === 'create' && html`<${FormDialog} type=${dialog.type} open=${open} onClose=${close} />`}
-        ${dialog?.kind === 'edit' && html`<${FormDialog} ...${dialog} open=${open} onClose=${close} />`}
-        ${dialog?.kind === 'delete' && html`<${DeleteDialog} ...${dialog} onClose=${close} />`}
+        ${dialog && dialog.kind === 'view' && html`<${ViewDialog} type=${dialog.type} id=${dialog.id} open=${open} onClose=${close} version=${version} />`}
+        ${dialog && dialog.kind === 'create' && html`<${FormDialog} type=${dialog.type} open=${open} onClose=${close} />`}
+        ${dialog && dialog.kind === 'edit' && html`<${FormDialog} type=${dialog.type} id=${dialog.id} open=${open} onClose=${close} />`}
+        ${dialog && dialog.kind === 'delete' && html`<${DeleteDialog} type=${dialog.type} id=${dialog.id} onClose=${close} />`}
     `;
 }
 

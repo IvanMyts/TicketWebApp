@@ -35,9 +35,9 @@ export const ENTITIES = {
             { name: 'type', label: 'Тип', enum: 'TicketType' },
             { name: 'discount', label: 'Скидка (1–100)', type: 'int', required: true, min: 1, max: 100 },
             { name: 'number', label: 'Номер (больше 0)', type: 'number', positive: true },
-            { name: 'personId', label: 'Человек', ref: 'persons', from: 'person' },
-            { name: 'eventId', label: 'Мероприятие', ref: 'events', from: 'event' },
-            { name: 'venueId', label: 'Площадка', ref: 'venues', from: 'venue' },
+            { name: 'personId', label: 'ID человека', ref: 'persons', from: 'person' },
+            { name: 'eventId', label: 'ID мероприятия', ref: 'events', from: 'event' },
+            { name: 'venueId', label: 'ID площадки', ref: 'venues', from: 'venue' },
         ],
     },
     persons: {
@@ -56,7 +56,7 @@ export const ENTITIES = {
         fields: [
             { name: 'eyeColor', label: 'Цвет глаз', enum: 'Color' },
             { name: 'hairColor', label: 'Цвет волос', enum: 'Color' },
-            { name: 'locationId', label: 'Локация', ref: 'locations', from: 'location' },
+            { name: 'locationId', label: 'ID локации', ref: 'locations', from: 'location' },
             { name: 'height', label: 'Рост (больше 0)', type: 'number', positive: true },
             { name: 'nationality', label: 'Национальность', enum: 'Country' },
         ],

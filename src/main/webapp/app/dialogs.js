@@ -12,18 +12,9 @@ export function Modal({ title, onClose, children }) {
         </div>`;
 }
 
-export function RefSelect({ type, value, onChange, exclude, required }) {
-    const [items, setItems] = useState([]);
-    useEffect(() => {
-        api(type, { query: { size: 100 } }).then((page) => setItems(page.content)).catch(() => setItems([]));
-    }, [type]);
-    return html`
-        <select value=${value} required=${required} onChange=${(e) => onChange(e.target.value)}>
-            <option value="">— не выбрано —</option>
-            ${items
-                .filter((item) => String(item.id) !== String(exclude))
-                .map((item) => html`<option key=${item.id} value=${String(item.id)}>${ENTITIES[type].label(item)}</option>`)}
-        </select>`;
+export function IdInput({ value, onChange, required, placeholder }) {
+    return html`<input type="number" min="1" step="1" placeholder=${placeholder || 'ID'} required=${required}
+                       value=${value} onInput=${(e) => onChange(e.target.value)} />`;
 }
 
 export function ViewDialog({ type, id, open, onClose, version }) {
@@ -113,7 +104,7 @@ export function FormDialog({ type, id, open, onClose }) {
 function Input({ field, value, onChange }) {
     const change = (e) => onChange(e.target.value);
     if (field.ref) {
-        return html`<${RefSelect} type=${field.ref} value=${value} onChange=${onChange} />`;
+        return html`<${IdInput} value=${value} onChange=${onChange} />`;
     }
     if (field.enum) {
         return html`
@@ -133,35 +124,74 @@ function Input({ field, value, onChange }) {
 }
 
 function emptyValues(cfg) {
-    return Object.fromEntries(cfg.fields.map((field) => [field.name, '']));
+    const values = {};
+    for (const field of cfg.fields) {
+        values[field.name] = '';
+    }
+    return values;
+}
+
+function getValue(item, name) {
+    let value = item;
+    for (const part of name.split('.')) {
+        if (value === null || value === undefined) {
+            return null;
+        }
+        value = value[part];
+    }
+    return value;
 }
 
 function toValues(cfg, item) {
-    return Object.fromEntries(cfg.fields.map((field) => {
-        let value = field.ref ? item[field.from]?.id : field.name.split('.').reduce((obj, key) => obj?.[key], item);
-        if (value === null || value === undefined) return [field.name, ''];
-        if (field.type === 'datetime') value = String(value).slice(0, 16);
-        return [field.name, String(value)];
-    }));
+    const values = {};
+    for (const field of cfg.fields) {
+        let value;
+        if (field.ref) {
+            const related = item[field.from];
+            value = related ? related.id : null;
+        } else {
+            value = getValue(item, field.name);
+        }
+        if (value === null || value === undefined) {
+            values[field.name] = '';
+        } else if (field.type === 'datetime') {
+            values[field.name] = String(value).slice(0, 16);
+        } else {
+            values[field.name] = String(value);
+        }
+    }
+    return values;
 }
 
 function toRequest(cfg, values) {
     const request = {};
     for (const field of cfg.fields) {
-        const raw = values[field.name];
-        const numeric = field.ref || field.type === 'int' || field.type === 'number';
-        const value = raw === '' ? null : numeric ? Number(raw) : raw;
-        const path = field.name.split('.');
-        let target = request;
-        path.slice(0, -1).forEach((key) => { target = target[key] = target[key] || {}; });
-        target[path[path.length - 1]] = value;
+        let value = values[field.name];
+        if (value === '') {
+            value = null;
+        } else if (field.ref || field.type === 'int' || field.type === 'number') {
+            value = Number(value);
+        }
+        const parts = field.name.split('.');
+        if (parts.length === 2) {
+            if (!request[parts[0]]) {
+                request[parts[0]] = {};
+            }
+            request[parts[0]][parts[1]] = value;
+        } else {
+            request[field.name] = value;
+        }
     }
     return request;
 }
 
 function validate(cfg, values) {
-    const field = cfg.fields.find((f) => f.positive && values[f.name] !== '' && Number(values[f.name]) <= 0);
-    return field ? `Поле «${field.label}» должно быть больше 0` : '';
+    for (const field of cfg.fields) {
+        if (field.positive && values[field.name] !== '' && Number(values[field.name]) <= 0) {
+            return `Поле «${field.label}» должно быть больше 0`;
+        }
+    }
+    return '';
 }
 
 export function DeleteDialog({ type, id, onClose }) {
@@ -189,8 +219,8 @@ export function DeleteDialog({ type, id, onClose }) {
                 <p>Удалить «${cfg.label(item)}»?</p>
                 ${type !== 'tickets' && html`
                     <label class="form">
-                        Если на объект ссылаются другие, выберите замену — ссылки перейдут на неё:
-                        <${RefSelect} type=${type} value=${replacementId} onChange=${setReplacementId} exclude=${id} />
+                        Если на объект ссылаются другие, укажите ID замены — ссылки перейдут на неё:
+                        <${IdInput} value=${replacementId} onChange=${setReplacementId} placeholder="ID замены" />
                     </label>`}
                 <div class="buttons">
                     <button class="danger" onClick=${remove}>Удалить</button>

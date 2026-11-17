@@ -1,6 +1,6 @@
 import { html, useState } from './lib.js';
 import { api } from './api.js';
-import { RefSelect } from './dialogs.js';
+import { IdInput } from './dialogs.js';
 
 export function Operations({ open }) {
     return html`
@@ -92,7 +92,7 @@ function SellTicket({ open }) {
         <${Section} title="Продать билет за указанную сумму указанному человеку" error=${op.error} onSubmit=${sell}
                     result=${op.result && html`<p>Продан билет <${TicketLink} ticket=${op.result} open=${open} /> за ${op.result.price}</p>`}>
             <input type="number" min="1" required placeholder="ID билета" value=${ticketId} onInput=${(e) => setTicketId(e.target.value)} />
-            <${RefSelect} type="persons" value=${personId} onChange=${setPersonId} required=${true} />
+            <${IdInput} value=${personId} onChange=${setPersonId} required=${true} placeholder="ID покупателя" />
             <input type="number" step="any" required placeholder="сумма" value=${price} onInput=${(e) => setPrice(e.target.value)} />
         <//>`;
 }
